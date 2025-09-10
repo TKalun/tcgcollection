@@ -1,0 +1,14 @@
+name = "cf-pages-worker-d1-app"
+main = "worker/index.js"
+compatibility_date = "2025-09-09"
+
+# D1 binding
+[[d1_databases]]
+binding = "DB"
+database_name = "mydb"
+database_id = "<D1_DATABASE_ID>"
+
+# Environment variables available to the Worker
+[vars]
+# Not for production use: replace with a secret (see README)
+JWT_SECRET = "replace-with-a-strong-secret"
