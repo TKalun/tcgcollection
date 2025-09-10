@@ -1,0 +1,16 @@
+{
+  "name": "cf-pages-worker-d1-app",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "echo \"no build step\"",
+    "hash": "node scripts/hash_password.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "wrangler": "^2.0.0"
+  }
+}
