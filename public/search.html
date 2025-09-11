@@ -1,60 +1,35 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8">
   <title>Search</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <style>
-    body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 800px; margin: auto; }
-    input { padding:.5rem; width:70%;}
-    button { padding:.5rem 1rem;}
-    pre { background:#f4f4f4; padding:1rem; margin-top:1rem; max-height:400px; overflow:auto;}
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Search Database</h1>
-  <div>
-    <input id="query" placeholder="Search term">
-    <button id="searchBtn">Search</button>
-    <button id="logoutBtn">Logout</button>
-  </div>
-  <pre id="results">No results yet.</pre>
+  <h1>Search Items</h1>
+  <input type="text" id="searchInput" placeholder="Search..." />
+  <button id="searchBtn">Search</button>
+  <ul id="results"></ul>
 
   <script>
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      localStorage.removeItem('token');
-      window.location.href = '/';
-    });
+    const token = localStorage.getItem('token');
+    const searchBtn = document.getElementById('searchBtn');
 
-    async function doSearch() {
-      const q = document.getElementById('query').value;
-      const token = localStorage.getItem('token');
-      if (!token) return window.location.href = '/';
-
-      const res = await fetch('/api/search?q=' + encodeURIComponent(q), {
-        headers: { 'Authorization': 'Bearer ' + token }
+    searchBtn.addEventListener('click', async () => {
+      const query = document.getElementById('searchInput').value;
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      if (res.ok) {
-        const json = await res.json();
-        document.getElementById('results').innerText = JSON.stringify(json, null, 2);
-      } else if (res.status === 403) {
-        alert('Unauthorized — please login again');
-        localStorage.removeItem('token');
-        window.location.href = '/';
-      } else {
-        const t = await res.text();
-        document.getElementById('results').innerText = 'Error: ' + t;
-      }
-    }
-
-    document.getElementById('searchBtn').addEventListener('click', doSearch);
-    document.getElementById('query').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
+      const results = await res.json();
+      const ul = document.getElementById('results');
+      ul.innerHTML = '';
+      results.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item.name + ': ' + item.description;
+        ul.appendChild(li);
+      });
     });
-
-    // Optional: run an initial empty search on load
-    // doSearch();
   </script>
 </body>
 </html>

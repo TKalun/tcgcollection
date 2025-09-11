@@ -1,32 +1,28 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8">
   <title>Login</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <style>
-    body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 600px; margin: auto; }
-    input { display:block; margin: .5rem 0; padding: .5rem; width:100%;}
-    button { padding:.6rem 1rem; }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>Login</h1>
   <form id="loginForm">
-    <input id="user" name="user" placeholder="username" required />
-    <input id="pass" name="pass" type="password" placeholder="password" required />
+    <input type="text" id="username" placeholder="Username" required /><br/>
+    <input type="password" id="password" placeholder="Password" required /><br/>
     <button type="submit">Login</button>
   </form>
 
   <script>
-    async function login(e) {
+    const form = document.getElementById('loginForm');
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const username = document.getElementById('user').value;
-      const password = document.getElementById('pass').value;
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
 
       const res = await fetch('/api/login', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
 
@@ -35,12 +31,9 @@
         localStorage.setItem('token', data.token);
         window.location.href = '/search.html';
       } else {
-        const text = await res.text();
-        alert('Login failed: ' + text);
+        alert(await res.text());
       }
-    }
-
-    document.getElementById('loginForm').addEventListener('submit', login);
+    });
   </script>
 </body>
 </html>

@@ -1,94 +1,97 @@
-import bcrypt from 'bcryptjs';
+import { SignJWT, jwtVerify } from "jose";
 
-// Simple JWT utilities using HMAC-SHA256 (Web Crypto)
-async function hmacSign(message, secret) {
+// Web Crypto password hash
+async function hashPassword(password, salt) {
   const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
-  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(message));
-  // base64url
-  return btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(password),
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits", "deriveKey"]
+  );
+
+  const key = await crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt: enc.encode(salt),
+      iterations: 100_000,
+      hash: "SHA-256"
+    },
+    keyMaterial,
+    { name: "AES-GCM", length: 256 },
+    true,
+    ["encrypt", "decrypt"]
+  );
+
+  const rawKey = await crypto.subtle.exportKey("raw", key);
+  return Buffer.from(rawKey).toString("hex");
 }
 
-function base64urlEncode(obj) {
-  const s = typeof obj === 'string' ? obj : JSON.stringify(obj);
-  return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-}
-
-function base64urlDecode(input) {
-  // not used in worker for payload decode, but included for completeness
-  input = input.replace(/-/g, '+').replace(/_/g, '/');
-  while (input.length % 4) input += '=';
-  return atob(input);
-}
-
-async function createJwt(payload, secret, expiresInSec = 3600) {
-  const header = { alg: "HS256", typ: "JWT" };
-  const exp = Math.floor(Date.now() / 1000) + expiresInSec;
-  const body = { ...payload, exp };
-  const message = base64urlEncode(header) + '.' + base64urlEncode(body);
-  const sig = await hmacSign(message, secret);
-  return message + '.' + sig;
-}
-
-async function verifyJwt(token, secret) {
-  if (!token) return null;
-  const parts = token.split('.');
-  if (parts.length !== 3) return null;
-  const [headerB64, bodyB64, sig] = parts;
-  const message = headerB64 + '.' + bodyB64;
-  const expectedSig = await hmacSign(message, secret);
-  if (sig !== expectedSig) return null;
-  const bodyJson = JSON.parse(atob(bodyB64.replace(/-/g,'+').replace(/_/g,'/')));
-  if (bodyJson.exp && Math.floor(Date.now()/1000) > bodyJson.exp) return null;
-  return bodyJson;
+function generateSalt() {
+  const arr = crypto.getRandomValues(new Uint8Array(16));
+  return Array.from(arr).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
 export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
-    const pathname = url.pathname;
+  async fetch(req, env) {
+    const url = new URL(req.url);
+    const method = req.method;
 
-    // POST /api/login
-    if (pathname === '/api/login' && request.method === 'POST') {
-      try {
-        const { username, password } = await request.json();
-        if (!username || !password) return new Response('username & password required', { status: 400 });
+    // Only POST for login/register
+    if (url.pathname === "/api/register" && method === "POST") {
+      const { username, password } = await req.json();
+      const salt = generateSalt();
+      const hashed = await hashPassword(password, salt);
 
-        // Query D1 for user
-        const row = await env.DB.prepare('SELECT id, username, password_hash FROM users WHERE username = ?').bind(username).first();
-        if (!row) return new Response('invalid credentials', { status: 401 });
+      await env.DB.prepare("INSERT INTO users (username, password, salt) VALUES (?, ?, ?)")
+        .bind(username, hashed, salt)
+        .run();
 
-        const correct = bcrypt.compareSync(password, row.password_hash);
-        if (!correct) return new Response('invalid credentials', { status: 401 });
-
-        const token = await createJwt({ sub: String(row.id), username: row.username }, env.JWT_SECRET, 60*60);
-        return new Response(JSON.stringify({ token }), { headers: { 'Content-Type': 'application/json' } });
-      } catch (err) {
-        return new Response(err.message || 'login error', { status: 500 });
-      }
+      return new Response("User registered");
     }
 
-    // GET /api/search?q=...
-    if (pathname === '/api/search' && request.method === 'GET') {
-      try {
-        const auth = request.headers.get('Authorization') || '';
-        const token = auth.replace('Bearer ', '');
-        const payload = await verifyJwt(token, env.JWT_SECRET);
-        if (!payload) return new Response('Unauthorized', { status: 403 });
+    if (url.pathname === "/api/login" && method === "POST") {
+      const { username, password } = await req.json();
+      const user = await env.DB.prepare("SELECT * FROM users WHERE username = ?")
+        .bind(username)
+        .first();
 
-        const q = url.searchParams.get('q') || '';
-        // Simple search against name and description (SQL LIKE). Use parameter binding to avoid injection.
-        const likeQ = '%' + q + '%';
-        const resultsObj = await env.DB.prepare('SELECT id, name, description FROM items WHERE name LIKE ? OR description LIKE ? LIMIT 50')
-                           .bind(likeQ, likeQ)
-                           .all();
-        return new Response(JSON.stringify(resultsObj.results || []), { headers: { 'Content-Type': 'application/json' } });
-      } catch (err) {
-        return new Response(err.message || 'search error', { status: 500 });
-      }
+      if (!user) return new Response("User not found", { status: 404 });
+
+      const hashedAttempt = await hashPassword(password, user.salt);
+      if (hashedAttempt !== user.password) return new Response("Invalid password", { status: 401 });
+
+      const secret = new TextEncoder().encode(env.JWT_SECRET);
+      const token = await new SignJWT({ sub: user.id })
+        .setProtectedHeader({ alg: "HS256" })
+        .setExpirationTime("1h")
+        .sign(secret);
+
+      return new Response(JSON.stringify({ token }), { headers: { "Content-Type": "application/json" } });
     }
 
-    // For safety, return 404 for other paths
-    return new Response('Not found', { status: 404 });
+    // Search endpoint (requires Bearer token)
+    if (url.pathname === "/api/search" && method === "GET") {
+      const auth = req.headers.get("Authorization");
+      if (!auth?.startsWith("Bearer ")) return new Response("Unauthorized", { status: 401 });
+
+      const token = auth.split(" ")[1];
+      try {
+        const secret = new TextEncoder().encode(env.JWT_SECRET);
+        await jwtVerify(token, secret);
+      } catch (err) {
+        return new Response("Invalid token", { status: 401 });
+      }
+
+      const q = url.searchParams.get("q") || "";
+      const items = await env.DB.prepare("SELECT * FROM items WHERE name LIKE ?")
+        .bind(`%${q}%`)
+        .all();
+
+      return new Response(JSON.stringify(items.results), { headers: { "Content-Type": "application/json" } });
+    }
+
+    return new Response("Not found", { status: 404 });
   }
-}
+};
