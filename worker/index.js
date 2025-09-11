@@ -41,34 +41,47 @@ export default {
     // 🔹 Registration endpoint
     if (url.pathname === "/api/register" && req.method === "POST") {
       const { username, password } = await req.json();
-      const salt = generateSalt();                   // random salt
+
+      if (!username || !password) {
+        return new Response("Missing username or password", { status: 400 });
+      }
+
+      const salt = generateSalt();
       const hashed = await hashPassword(password, salt);
 
-      await env.DB.prepare(
-        "INSERT INTO users (username, password, salt) VALUES (?, ?, ?)"
-      ).bind(username, hashed, salt).run();
+      try {
+        await env.DB.prepare(
+          "INSERT INTO users (username, password, salt) VALUES (?, ?, ?)"
+        ).bind(username, hashed, salt).run();
 
-      return new Response("User registered");
+        return new Response("User registered successfully");
+      } catch (err) {
+        if (err.message.includes("UNIQUE")) {
+          return new Response("Username already exists", { status: 409 });
+        }
+        return new Response("Registration error: " + err.message, { status: 500 });
+      }
     }
 
     // 🔹 Login endpoint
     if (url.pathname === "/api/login" && req.method === "POST") {
       const { username, password } = await req.json();
 
-      // Fetch user from D1
+      if (!username || !password) {
+        return new Response("Missing username or password", { status: 400 });
+      }
+
       const user = await env.DB.prepare(
         "SELECT * FROM users WHERE username = ?"
       ).bind(username).first();
 
       if (!user) return new Response("User not found", { status: 404 });
 
-      // Verify password
       const hashedAttempt = await hashPassword(password, user.salt);
       if (hashedAttempt !== user.password) {
         return new Response("Invalid password", { status: 401 });
       }
 
-      // Issue JWT token
       const secret = new TextEncoder().encode(env.JWT_SECRET);
       const token = await new SignJWT({ sub: user.id })
         .setProtectedHeader({ alg: "HS256" })
@@ -80,7 +93,7 @@ export default {
       });
     }
 
-    // 🔹 Search endpoint (requires JWT)
+    // 🔹 Optional: search endpoint (JWT-protected)
     if (url.pathname === "/api/search" && req.method === "GET") {
       const auth = req.headers.get("Authorization");
       if (!auth?.startsWith("Bearer ")) return new Response("Unauthorized", { status: 401 });
@@ -89,7 +102,7 @@ export default {
       try {
         const secret = new TextEncoder().encode(env.JWT_SECRET);
         await jwtVerify(token, secret);
-      } catch (err) {
+      } catch {
         return new Response("Invalid token", { status: 401 });
       }
 
