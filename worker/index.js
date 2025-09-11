@@ -1,6 +1,6 @@
-import { SignJWT, jwtVerify } from "jose";
+import { SignJWT } from "jose";
 
-// Web Crypto password hash
+// 🔹 NEW: Web Crypto password hash function
 async function hashPassword(password, salt) {
   const enc = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey(
@@ -28,6 +28,7 @@ async function hashPassword(password, salt) {
   return Buffer.from(rawKey).toString("hex");
 }
 
+// 🔹 NEW: Random salt generator
 function generateSalt() {
   const arr = crypto.getRandomValues(new Uint8Array(16));
   return Array.from(arr).map(b => b.toString(16).padStart(2, "0")).join("");
@@ -36,60 +37,34 @@ function generateSalt() {
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
-    const method = req.method;
 
-    // Only POST for login/register
-    if (url.pathname === "/api/register" && method === "POST") {
+    // 🔹 NEW: Login endpoint
+    if (url.pathname === "/api/login" && req.method === "POST") {
       const { username, password } = await req.json();
-      const salt = generateSalt();
-      const hashed = await hashPassword(password, salt);
 
-      await env.DB.prepare("INSERT INTO users (username, password, salt) VALUES (?, ?, ?)")
-        .bind(username, hashed, salt)
-        .run();
-
-      return new Response("User registered");
-    }
-
-    if (url.pathname === "/api/login" && method === "POST") {
-      const { username, password } = await req.json();
-      const user = await env.DB.prepare("SELECT * FROM users WHERE username = ?")
-        .bind(username)
-        .first();
+      // 🔹 Fetch user from D1
+      const user = await env.DB.prepare(
+        "SELECT * FROM users WHERE username = ?"
+      ).bind(username).first();
 
       if (!user) return new Response("User not found", { status: 404 });
 
+      // 🔹 Verify password using Web Crypto hash
       const hashedAttempt = await hashPassword(password, user.salt);
-      if (hashedAttempt !== user.password) return new Response("Invalid password", { status: 401 });
+      if (hashedAttempt !== user.password) {
+        return new Response("Invalid password", { status: 401 });
+      }
 
+      // 🔹 Issue JWT token
       const secret = new TextEncoder().encode(env.JWT_SECRET);
       const token = await new SignJWT({ sub: user.id })
         .setProtectedHeader({ alg: "HS256" })
         .setExpirationTime("1h")
         .sign(secret);
 
-      return new Response(JSON.stringify({ token }), { headers: { "Content-Type": "application/json" } });
-    }
-
-    // Search endpoint (requires Bearer token)
-    if (url.pathname === "/api/search" && method === "GET") {
-      const auth = req.headers.get("Authorization");
-      if (!auth?.startsWith("Bearer ")) return new Response("Unauthorized", { status: 401 });
-
-      const token = auth.split(" ")[1];
-      try {
-        const secret = new TextEncoder().encode(env.JWT_SECRET);
-        await jwtVerify(token, secret);
-      } catch (err) {
-        return new Response("Invalid token", { status: 401 });
-      }
-
-      const q = url.searchParams.get("q") || "";
-      const items = await env.DB.prepare("SELECT * FROM items WHERE name LIKE ?")
-        .bind(`%${q}%`)
-        .all();
-
-      return new Response(JSON.stringify(items.results), { headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ token }), {
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
     return new Response("Not found", { status: 404 });

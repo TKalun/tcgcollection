@@ -1,39 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Login</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <h1>Login</h1>
-  <form id="loginForm">
-    <input type="text" id="username" placeholder="Username" required /><br/>
-    <input type="password" id="password" placeholder="Password" required /><br/>
-    <button type="submit">Login</button>
-  </form>
+<form id="loginForm">
+  <input type="text" id="username" placeholder="Username" required /><br/>
+  <input type="password" id="password" placeholder="Password" required /><br/>
+  <button type="submit">Login</button>
+</form>
 
-  <script>
-    const form = document.getElementById('loginForm');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+<script>
+  // 🔹 NEW: Frontend login logic
+  const form = document.getElementById('loginForm');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
 
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        localStorage.setItem('token', data.token);
-        window.location.href = '/search.html';
-      } else {
-        alert(await res.text());
-      }
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
     });
-  </script>
-</body>
-</html>
+
+    if (res.ok) {
+      const data = await res.json();
+      localStorage.setItem('token', data.token); // 🔹 NEW: store JWT
+      alert("Login successful!");
+      window.location.href = '/search.html'; // redirect
+    } else {
+      alert(await res.text());
+    }
+  });
+</script>
