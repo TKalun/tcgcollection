@@ -6,37 +6,45 @@
   <title>Search</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
-    input { padding: 8px; width: 250px; }
-    button { padding: 8px 12px; margin-left: 8px; }
-    #results { margin-top: 20px; }
-    .item { padding: 10px; border-bottom: 1px solid #ccc; }
+    input { padding: 8px; width: 250px; margin-right: 8px; }
+    button { padding: 8px 12px; }
+    #results, #tcgResults { margin-top: 20px; }
+    .item, .tcg-card { padding: 10px; border-bottom: 1px solid #ccc; }
   </style>
 </head>
 <body>
-  <h1>Search Database</h1>
+  <h1>Search Database & TCGdex</h1>
 
   <form id="searchForm">
-    <input type="text" id="searchQuery" placeholder="Enter search term" required />
-    <button type="submit">Search</button>
+    <input type="text" id="searchQuery" placeholder="Enter local DB search term" required />
+    <button type="submit">Search Local DB</button>
+  </form>
+
+  <form id="tcgForm" style="margin-top: 20px;">
+    <input type="text" id="tcgQuery" placeholder="Enter TCGdex card name" required />
+    <button type="submit">Search TCGdex</button>
   </form>
 
   <div id="results"></div>
+  <div id="tcgResults"></div>
 
   <script>
     const API_BASE = "https://cf-pages-worker-d1-app.thomasklai88.workers.dev";
     const token = localStorage.getItem("token");
 
-    // Redirect if not logged in
     if (!token) {
       alert("You must log in first!");
       window.location.href = "index.html";
     }
 
+    // --------------------------
+    // Local DB Search
+    // --------------------------
     document.getElementById("searchForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const query = document.getElementById("searchQuery").value;
       const resultsDiv = document.getElementById("results");
-      resultsDiv.innerHTML = "<p>Searching...</p>";
+      resultsDiv.innerHTML = "<p>Searching local database...</p>";
 
       try {
         const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}`, {
@@ -49,10 +57,39 @@
             `<div class="item"><strong>${item.name}</strong><br>${item.description || ""}</div>`
           ).join("");
         } else {
-          resultsDiv.innerHTML = "<p>No results found</p>";
+          resultsDiv.innerHTML = "<p>No results found in local DB</p>";
         }
       } catch (err) {
         resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+      }
+    });
+
+    // --------------------------
+    // TCGdex Search
+    // --------------------------
+    document.getElementById("tcgForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const query = document.getElementById("tcgQuery").value;
+      const tcgDiv = document.getElementById("tcgResults");
+      tcgDiv.innerHTML = "<p>Searching TCGdex...</p>";
+
+      try {
+        const res = await fetch(`${API_BASE}/api/tcgdex?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+
+        if (data.results && data.results.length > 0) {
+          tcgDiv.innerHTML = data.results.map(card =>
+            `<div class="tcg-card">
+              <strong>${card.name}</strong> (${card.set || ""})<br>
+              <img src="${card.images?.small || ''}" alt="${card.name}" style="max-width:100px;"/><br>
+              ${card.text || ""}
+            </div>`
+          ).join("");
+        } else {
+          tcgDiv.innerHTML = "<p>No TCGdex cards found</p>";
+        }
+      } catch (err) {
+        tcgDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
       }
     });
   </script>

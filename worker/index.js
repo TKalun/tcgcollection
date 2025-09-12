@@ -1,4 +1,4 @@
-import * as jose from "jose"; // JWT library for Workers
+import * as jose from "jose"; // JWT library
 
 function withCors(response) {
   return new Response(response.body, {
@@ -12,13 +12,16 @@ function withCors(response) {
   });
 }
 
-const JWT_SECRET = new TextEncoder().encode("YOUR_SECRET_KEY"); // Store securely with wrangler secret
+// Use Wrangler secret for JWT
+const JWT_SECRET = new TextEncoder().encode("YOUR_SECRET_KEY");
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // Handle preflight
+    // ------------------------
+    // Handle OPTIONS
+    // ------------------------
     if (request.method === "OPTIONS") {
       return new Response(null, {
         headers: {
@@ -68,11 +71,8 @@ export default {
         const hashedBuffer = await crypto.subtle.digest("SHA-256", pwBuffer);
         const hashedPassword = btoa(String.fromCharCode(...new Uint8Array(hashedBuffer)));
 
-        if (hashedPassword !== user.password) {
-          return withCors(new Response(JSON.stringify({ error: "Invalid password" }), { status: 401 }));
-        }
+        if (hashedPassword !== user.password) return withCors(new Response(JSON.stringify({ error: "Invalid password" }), { status: 401 }));
 
-        // Issue JWT
         const token = await new jose.SignJWT({ username })
           .setProtectedHeader({ alg: "HS256", typ: "JWT" })
           .setExpirationTime("1h")
@@ -85,7 +85,7 @@ export default {
     }
 
     // ------------------------
-    // Search (protected)
+    // Local DB search (JWT-protected)
     // ------------------------
     if (url.pathname === "/api/search" && request.method === "GET") {
       try {
@@ -94,8 +94,7 @@ export default {
 
         const token = authHeader.split(" ")[1];
         try {
-          const { payload } = await jose.jwtVerify(token, JWT_SECRET);
-          // payload.username is available
+          await jose.jwtVerify(token, JWT_SECRET);
         } catch {
           return withCors(new Response(JSON.stringify({ error: "Invalid token" }), { status: 401 }));
         }
@@ -106,6 +105,26 @@ export default {
         ).bind(`%${q}%`, `%${q}%`).all();
 
         return withCors(new Response(JSON.stringify({ results: rows.results }), { headers: { "Content-Type": "application/json" } }));
+      } catch (err) {
+        return withCors(new Response(JSON.stringify({ error: err.message }), { status: 500 }));
+      }
+    }
+
+    // ------------------------
+    // TCGdex Search (no JWT required)
+    // ------------------------
+    if (url.pathname === "/api/tcgdex" && request.method === "GET") {
+      try {
+        const q = url.searchParams.get("q") || "charizard";
+
+        // Use TCGdex REST API directly (simpler for Workers)
+        const res = await fetch(`https://api.tcgdex.net/v2/en/cards?name=${encodeURIComponent(q)}`);
+        const data = await res.json();
+
+        // Return results array
+        return withCors(new Response(JSON.stringify({ results: data.data || [] }), {
+          headers: { "Content-Type": "application/json" }
+        }));
       } catch (err) {
         return withCors(new Response(JSON.stringify({ error: err.message }), { status: 500 }));
       }
