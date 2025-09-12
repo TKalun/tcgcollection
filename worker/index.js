@@ -12,7 +12,7 @@ function withCors(response) {
   });
 }
 
-const JWT_SECRET = new TextEncoder().encode("YOUR_SECRET_KEY");
+const JWT_SECRET = new TextEncoder().encode("MFP4x1ee9Kqx1FVpVct9nEFz+j12JZrvz5MmJBQRbms=");
 
 export default {
   async fetch(request, env) {
