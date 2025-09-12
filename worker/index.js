@@ -1,9 +1,11 @@
+import { tcgdex } from "@tcgdex/sdk"; // SDK import
+
 function withCors(response) {
   return new Response(response.body, {
     ...response,
     headers: {
       ...Object.fromEntries(response.headers),
-      "Access-Control-Allow-Origin": "*", // change to your Pages domain for more security
+      "Access-Control-Allow-Origin": "*", // 🔒 replace * with your Pages domain for more security
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization"
     }
@@ -14,7 +16,9 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // Handle preflight requests (OPTIONS)
+    // ------------------------
+    // Handle preflight requests
+    // ------------------------
     if (request.method === "OPTIONS") {
       return new Response(null, {
         headers: {
@@ -36,14 +40,13 @@ export default {
           return withCors(new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 }));
         }
 
-        const salt = crypto.getRandomValues(new Uint8Array(16));
         const pwBuffer = new TextEncoder().encode(password);
         const hashedBuffer = await crypto.subtle.digest("SHA-256", pwBuffer);
         const hashedPassword = btoa(String.fromCharCode(...new Uint8Array(hashedBuffer)));
 
         await env.DB.prepare(
-          "INSERT INTO users (username, password, salt) VALUES (?, ?, ?)"
-        ).bind(username, hashedPassword, btoa(String.fromCharCode(...salt))).run();
+          "INSERT INTO users (username, password) VALUES (?, ?)"
+        ).bind(username, hashedPassword).run();
 
         return withCors(new Response(JSON.stringify({ success: true }), { status: 200 }));
       } catch (err) {
@@ -81,7 +84,7 @@ export default {
     }
 
     // ------------------------
-    // Search
+    // Local DB Search
     // ------------------------
     if (url.pathname === "/api/search" && request.method === "GET") {
       try {
@@ -91,6 +94,32 @@ export default {
         ).bind(`%${q}%`, `%${q}%`).all();
 
         return withCors(new Response(JSON.stringify({ results: rows.results }), {
+          headers: { "Content-Type": "application/json" }
+        }));
+      } catch (err) {
+        return withCors(new Response(JSON.stringify({ error: err.message }), { status: 500 }));
+      }
+    }
+
+    // ------------------------
+    // TCGdex Search (SDK + fallback REST)
+    // ------------------------
+    if (url.pathname === "/api/tcgdex" && request.method === "GET") {
+      try {
+        const q = url.searchParams.get("q") || "charizard";
+        let results;
+
+        try {
+          // Try SDK first
+          const api = tcgdex("en");
+          results = await api.cards.find(q);
+        } catch (sdkErr) {
+          // Fallback to raw REST API if SDK fails
+          const res = await fetch(`https://api.tcgdex.net/v2/en/cards?name=${encodeURIComponent(q)}`);
+          results = await res.json();
+        }
+
+        return withCors(new Response(JSON.stringify({ results }), {
           headers: { "Content-Type": "application/json" }
         }));
       } catch (err) {
