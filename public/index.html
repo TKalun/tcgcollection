@@ -1,81 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Login / Register</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login/Register</title>
 </head>
 <body>
-  <h1>Login / Register</h1>
-
-  <!-- Registration Form -->
-  <h2>Register</h2>
+  <h1>Register</h1>
   <form id="registerForm">
-    <input type="text" id="regUsername" placeholder="Username" required /><br/>
-    <input type="password" id="regPassword" placeholder="Password" required /><br/>
+    <input type="text" id="regUsername" placeholder="Username" required />
+    <input type="password" id="regPassword" placeholder="Password" required />
     <button type="submit">Register</button>
   </form>
 
-  <!-- Login Form -->
-  <h2>Login</h2>
+  <h1>Login</h1>
   <form id="loginForm">
-    <input type="text" id="loginUsername" placeholder="Username" required /><br/>
-    <input type="password" id="loginPassword" placeholder="Password" required /><br/>
+    <input type="text" id="loginUsername" placeholder="Username" required />
+    <input type="password" id="loginPassword" placeholder="Password" required />
     <button type="submit">Login</button>
   </form>
 
   <script>
-    // 🔹 Set the full Worker URL
-    const workerUrl = "https://cf-pages-worker-d1-app.thomasklai88.workers.dev"; // replace <your-account>
+    const API_BASE = "https://cf-pages-worker-d1-app.thomasklai88.workers.dev"; 
+    // replace with http://localhost:8787 if running wrangler dev
 
-    // Registration
-    const registerForm = document.getElementById('registerForm');
-    registerForm.addEventListener('submit', async (e) => {
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const username = document.getElementById('regUsername').value;
-      const password = document.getElementById('regPassword').value;
+      const username = document.getElementById("regUsername").value;
+      const password = document.getElementById("regPassword").value;
 
       try {
-        const res = await fetch(`${workerUrl}/api/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch(`${API_BASE}/api/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, password })
         });
-
-        const text = await res.text();
-        alert(text);
-        registerForm.reset();
+        const data = await res.json();
+        alert(JSON.stringify(data));
       } catch (err) {
-        console.error("Registration error:", err);
-        alert("Registration failed, check console.");
+        console.error(err);
       }
     });
 
-    // Login
-    const loginForm = document.getElementById('loginForm');
-    loginForm.addEventListener('submit', async (e) => {
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const username = document.getElementById('loginUsername').value;
-      const password = document.getElementById('loginPassword').value;
+      const username = document.getElementById("loginUsername").value;
+      const password = document.getElementById("loginPassword").value;
 
       try {
-        const res = await fetch(`${workerUrl}/api/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch(`${API_BASE}/api/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, password })
         });
-
-        if (res.ok) {
-          const data = await res.json();
-          localStorage.setItem('token', data.token);
-          alert("Login successful!");
-          window.location.href = '/search.html';
-        } else {
-          const text = await res.text();
-          alert("Login failed: " + text);
-        }
+        const data = await res.json();
+        alert(JSON.stringify(data));
       } catch (err) {
-        console.error("Login error:", err);
-        alert("Login failed, check console.");
+        console.error(err);
       }
     });
   </script>
