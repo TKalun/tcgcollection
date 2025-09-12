@@ -10,6 +10,7 @@
     button { padding: 8px 12px; margin-top: 5px; }
     #results, #tcgResults, #cardResult { margin-top: 20px; }
     .item, .tcg-card { padding: 10px; border-bottom: 1px solid #ccc; margin-bottom: 10px; }
+    .field { margin-left: 10px; }
   </style>
 </head>
 <body>
@@ -44,6 +45,16 @@
       window.location.href = "index.html";
     }
 
+    // Helper: Convert object to HTML list recursively
+    function renderObject(obj) {
+      if (!obj || typeof obj !== 'object') return obj || '';
+      return `<ul>` + Object.entries(obj).map(([k, v]) => {
+        if (Array.isArray(v)) v = v.map(i => renderObject(i)).join('');
+        else if (typeof v === 'object') v = renderObject(v);
+        return `<li><strong>${k}:</strong> <span class="field">${v}</span></li>`;
+      }).join('') + `</ul>`;
+    }
+
     // Local DB search
     document.getElementById("searchForm").addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -57,7 +68,7 @@
         });
         const data = await res.json();
         if (data.results?.length) {
-          resultsDiv.innerHTML = data.results.map(item => `<div class="item"><strong>${item.name}</strong><br>${item.description || ""}</div>`).join("");
+          resultsDiv.innerHTML = data.results.map(item => `<div class="item">${renderObject(item)}</div>`).join("");
         } else {
           resultsDiv.innerHTML = "<p>No results found in local DB</p>";
         }
@@ -76,8 +87,8 @@
       try {
         const res = await fetch(`${API_BASE}/api/tcgdex?q=${encodeURIComponent(query)}`);
         const data = await res.json();
-        if (data.results?.length) {
-          tcgDiv.innerHTML = data.results.map(card => `<div class="tcg-card"><strong>${card.name}</strong> (${card.set || ""})<br><img src="${card.images?.small || ''}" alt="${card.name}" style="max-width:100px;"/><br>${card.text || ""}</div>`).join("");
+        if (data.data?.length) {
+          tcgDiv.innerHTML = data.data.map(card => `<div class="tcg-card">${renderObject(card)}</div>`).join("");
         } else {
           tcgDiv.innerHTML = "<p>No TCGdex cards found</p>";
         }
@@ -95,11 +106,10 @@
       cardDiv.innerHTML = "<p>Loading card...</p>";
 
       try {
-        const res = await fetch(`${API_BASE}"https://api.tcgdex.net/v2/en/cards/"${encodeURIComponent(cardId)}`);
+        const res = await fetch(`${API_BASE}/api/tcgdex/card/${encodeURIComponent(cardId)}`);
         const data = await res.json();
-        if (data.card) {
-          const card = data.card;
-          cardDiv.innerHTML = `<div class="tcg-card"><strong>${card.name}</strong> (${card.set || ""})<br><img src="${card.images?.small || ''}" alt="${card.name}" style="max-width:100px;"/><br>${card.text || ""}</div>`;
+        if (data.data) {
+          cardDiv.innerHTML = `<div class="tcg-card">${renderObject(data.data)}</div>`;
         } else {
           cardDiv.innerHTML = "<p>Card not found</p>";
         }
