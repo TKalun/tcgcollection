@@ -30,10 +30,9 @@
   </form>
   <div id="tcgResults"></div>
 
-  <!-- Specific card by ID -->
-  <h2>Specific Card</h2>
-  <input type="text" id="cardId" placeholder="Enter card ID (e.g. swsh3-136)" />
-  <button id="getCardBtn">Get Card</button>
+  <!-- Specific card test -->
+  <h2>Specific Card Test (swsh3-136)</h2>
+  <button id="getCardBtn">Get Test Card</button>
   <div id="cardResult"></div>
 
   <script>
@@ -50,12 +49,14 @@
       if (!obj || typeof obj !== 'object') return obj || '';
       return `<ul>` + Object.entries(obj).map(([k, v]) => {
         if (Array.isArray(v)) v = v.map(i => renderObject(i)).join('');
-        else if (typeof v === 'object') v = renderObject(v);
+        else if (typeof v === "object") v = renderObject(v);
         return `<li><strong>${k}:</strong> <span class="field">${v}</span></li>`;
       }).join('') + `</ul>`;
     }
 
+    // --------------------------
     // Local DB search
+    // --------------------------
     document.getElementById("searchForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const query = document.getElementById("searchQuery").value;
@@ -77,7 +78,9 @@
       }
     });
 
+    // --------------------------
     // TCGdex search by name
+    // --------------------------
     document.getElementById("tcgForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const query = document.getElementById("tcgQuery").value;
@@ -87,8 +90,9 @@
       try {
         const res = await fetch(`${API_BASE}/api/tcgdex?q=${encodeURIComponent(query)}`);
         const data = await res.json();
-        if (data.data?.length) {
-          tcgDiv.innerHTML = data.data.map(card => `<div class="tcg-card">${renderObject(card)}</div>`).join("");
+        const cards = data.data || [];
+        if (cards.length) {
+          tcgDiv.innerHTML = cards.map(card => `<div class="tcg-card">${renderObject(card)}</div>`).join("");
         } else {
           tcgDiv.innerHTML = "<p>No TCGdex cards found</p>";
         }
@@ -97,22 +101,20 @@
       }
     });
 
-    // Specific card by ID
+    // --------------------------
+    // Specific card test (swsh3-136)
+    // --------------------------
     document.getElementById("getCardBtn").addEventListener("click", async () => {
       const cardDiv = document.getElementById("cardResult");
-      const cardId = document.getElementById("cardId").value.trim();
-      if (!cardId) return;
-
       cardDiv.innerHTML = "<p>Loading card...</p>";
 
       try {
-        const res = await fetch("https://api.tcgdex.net/v2/en/cards/swsh3-136");
+        const res = await fetch(`${API_BASE}/api/tcgdex/card/swsh3-136`);
         const data = await res.json();
-        if (data.data) {
-          cardDiv.innerHTML = `<div class="tcg-card">${renderObject(data.data)}</div>`;
-        } else {
-          cardDiv.innerHTML = "<p>Card not found</p>";
-        }
+        console.log(data); // debug
+
+        const cardData = data.data || data;
+        cardDiv.innerHTML = `<div class="tcg-card">${renderObject(cardData)}</div>`;
       } catch (err) {
         cardDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
       }
