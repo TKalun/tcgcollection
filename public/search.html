@@ -1,57 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Search Items</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input { padding: 8px; width: 250px; }
+    button { padding: 8px 12px; margin-left: 8px; }
+    #results { margin-top: 20px; }
+    .item { padding: 10px; border-bottom: 1px solid #ccc; }
+  </style>
 </head>
 <body>
-  <h1>Search Items</h1>
-
+  <h1>Search Database</h1>
   <form id="searchForm">
-    <input type="text" id="searchQuery" placeholder="Search..." required />
+    <input type="text" id="searchQuery" placeholder="Enter search term" required />
     <button type="submit">Search</button>
   </form>
 
   <div id="results"></div>
 
   <script>
-    const searchForm = document.getElementById('searchForm');
-    const resultsDiv = document.getElementById('results');
+    const API_BASE = "https://cf-pages-worker-d1-app.thomasklai88.workers.dev";
 
-    searchForm.addEventListener('submit', async (e) => {
+    document.getElementById("searchForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+      const query = document.getElementById("searchQuery").value;
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "<p>Searching...</p>";
 
-      const query = document.getElementById('searchQuery').value;
-      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
 
-      if (!token) {
-        alert("You must be logged in to search.");
-        window.location.href = '/index.html';
-        return;
-      }
-
-      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+        if (data.results && data.results.length > 0) {
+          resultsDiv.innerHTML = data.results.map(item =>
+            `<div class="item"><strong>${item.name}</strong><br>${item.description || ""}</div>`
+          ).join("");
+        } else {
+          resultsDiv.innerHTML = "<p>No results found</p>";
         }
-      });
-
-      if (res.ok) {
-        const items = await res.json();
-        if (items.length === 0) {
-          resultsDiv.innerHTML = "<p>No results found.</p>";
-          return;
-        }
-
-        resultsDiv.innerHTML = items.map(item => `
-          <div>
-            <h3>${item.name}</h3>
-            <p>${item.description || ""}</p>
-          </div>
-        `).join("");
-      } else {
-        const text = await res.text();
-        alert("Error: " + text);
+      } catch (err) {
+        resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
       }
     });
   </script>

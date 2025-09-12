@@ -3,7 +3,7 @@ function withCors(response) {
     ...response,
     headers: {
       ...Object.fromEntries(response.headers),
-      "Access-Control-Allow-Origin": "*", // replace * with your Pages domain if you want stricter security
+      "Access-Control-Allow-Origin": "*", // change to your Pages domain for more security
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization"
     }
@@ -25,7 +25,9 @@ export default {
       });
     }
 
-    // Handle user registration
+    // ------------------------
+    // Registration
+    // ------------------------
     if (url.pathname === "/api/register" && request.method === "POST") {
       try {
         const { username, password } = await request.json();
@@ -49,7 +51,9 @@ export default {
       }
     }
 
-    // Handle login
+    // ------------------------
+    // Login
+    // ------------------------
     if (url.pathname === "/api/login" && request.method === "POST") {
       try {
         const { username, password } = await request.json();
@@ -62,7 +66,6 @@ export default {
           return withCors(new Response(JSON.stringify({ error: "User not found" }), { status: 404 }));
         }
 
-        // Verify password
         const pwBuffer = new TextEncoder().encode(password);
         const hashedBuffer = await crypto.subtle.digest("SHA-256", pwBuffer);
         const hashedPassword = btoa(String.fromCharCode(...new Uint8Array(hashedBuffer)));
@@ -77,6 +80,27 @@ export default {
       }
     }
 
+    // ------------------------
+    // Search
+    // ------------------------
+    if (url.pathname === "/api/search" && request.method === "GET") {
+      try {
+        const q = url.searchParams.get("q") || "";
+        const rows = await env.DB.prepare(
+          "SELECT * FROM items WHERE name LIKE ? OR description LIKE ?"
+        ).bind(`%${q}%`, `%${q}%`).all();
+
+        return withCors(new Response(JSON.stringify({ results: rows.results }), {
+          headers: { "Content-Type": "application/json" }
+        }));
+      } catch (err) {
+        return withCors(new Response(JSON.stringify({ error: err.message }), { status: 500 }));
+      }
+    }
+
+    // ------------------------
+    // Fallback
+    // ------------------------
     return withCors(new Response("Not found", { status: 404 }));
   }
 };
