@@ -106,7 +106,7 @@
       cardDiv.innerHTML = "<p>Loading card...</p>";
 
       try {
-        const res = await fetch(`${API_BASE}/api/tcgdex/card/${encodeURIComponent(cardId)}`);
+        const res = await fetch("https://api.tcgdex.net/v2/en/cards/swsh3-136");
         const data = await res.json();
         if (data.data) {
           cardDiv.innerHTML = `<div class="tcg-card">${renderObject(data.data)}</div>`;
