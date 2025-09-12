@@ -7,31 +7,38 @@
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
     input { padding: 8px; width: 250px; margin-right: 8px; }
-    button { padding: 8px 12px; }
-    #results, #tcgResults { margin-top: 20px; }
-    .item, .tcg-card { padding: 10px; border-bottom: 1px solid #ccc; }
+    button { padding: 8px 12px; margin-top: 5px; }
+    #results, #tcgResults, #randomCard { margin-top: 20px; }
+    .item, .tcg-card { padding: 10px; border-bottom: 1px solid #ccc; margin-bottom: 10px; }
   </style>
 </head>
 <body>
   <h1>Search Database & TCGdex</h1>
 
+  <!-- Local DB search -->
   <form id="searchForm">
     <input type="text" id="searchQuery" placeholder="Enter local DB search term" required />
     <button type="submit">Search Local DB</button>
   </form>
+  <div id="results"></div>
 
+  <!-- TCGdex search -->
   <form id="tcgForm" style="margin-top: 20px;">
     <input type="text" id="tcgQuery" placeholder="Enter TCGdex card name" required />
     <button type="submit">Search TCGdex</button>
   </form>
-
-  <div id="results"></div>
   <div id="tcgResults"></div>
+
+  <!-- Random card -->
+  <h2>Random Card</h2>
+  <button id="randomBtn">Get Random Card</button>
+  <div id="randomCard"></div>
 
   <script>
     const API_BASE = "https://cf-pages-worker-d1-app.thomasklai88.workers.dev";
     const token = localStorage.getItem("token");
 
+    // Redirect if not logged in
     if (!token) {
       alert("You must log in first!");
       window.location.href = "index.html";
@@ -90,6 +97,34 @@
         }
       } catch (err) {
         tcgDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+      }
+    });
+
+    // --------------------------
+    // Random TCG Card
+    // --------------------------
+    document.getElementById("randomBtn").addEventListener("click", async () => {
+      const randomDiv = document.getElementById("randomCard");
+      randomDiv.innerHTML = "<p>Loading random card...</p>";
+
+      try {
+        const res = await fetch(`${API_BASE}/api/tcgdex/random`);
+        const data = await res.json();
+
+        if (data.card) {
+          const card = data.card;
+          randomDiv.innerHTML = `
+            <div class="tcg-card">
+              <strong>${card.name}</strong> (${card.set || ""})<br>
+              <img src="${card.images?.small || ''}" alt="${card.name}" style="max-width:100px;"/><br>
+              ${card.text || ""}
+            </div>
+          `;
+        } else {
+          randomDiv.innerHTML = "<p>No card found</p>";
+        }
+      } catch (err) {
+        randomDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
       }
     });
   </script>
