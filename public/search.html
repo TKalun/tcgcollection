@@ -1,50 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Search</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    input { padding: 8px; width: 250px; }
-    button { padding: 8px 12px; margin-left: 8px; }
-    #results { margin-top: 20px; }
-    .item { padding: 10px; border-bottom: 1px solid #ccc; }
-  </style>
-</head>
-<body>
-  <h1>Search Database</h1>
-  <form id="searchForm">
-    <input type="text" id="searchQuery" placeholder="Enter search term" required />
-    <button type="submit">Search</button>
-  </form>
+<script>
+const API_BASE = "https://cf-pages-worker-d1-app.workers.dev";
+const token = localStorage.getItem("token");
 
-  <div id="results"></div>
+if (!token) {
+  alert("You must log in first!");
+  window.location.href = "index.html";
+}
 
-  <script>
-    const API_BASE = "https://cf-pages-worker-d1-app.thomasklai88.workers.dev";
+document.getElementById("searchForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const q = document.getElementById("searchQuery").value;
 
-    document.getElementById("searchForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const query = document.getElementById("searchQuery").value;
-      const resultsDiv = document.getElementById("results");
-      resultsDiv.innerHTML = "<p>Searching...</p>";
+  const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(q)}`, {
+    headers: { "Authorization": `Bearer ${token}` }
+  });
+  const data = await res.json();
 
-      try {
-        const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}`);
-        const data = await res.json();
-
-        if (data.results && data.results.length > 0) {
-          resultsDiv.innerHTML = data.results.map(item =>
-            `<div class="item"><strong>${item.name}</strong><br>${item.description || ""}</div>`
-          ).join("");
-        } else {
-          resultsDiv.innerHTML = "<p>No results found</p>";
-        }
-      } catch (err) {
-        resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
-      }
-    });
-  </script>
-</body>
-</html>
+  // Display results
+  const resultsDiv = document.getElementById("results");
+  if (data.results && data.results.length > 0) {
+    resultsDiv.innerHTML = data.results.map(item =>
+      `<div><strong>${item.name}</strong><br>${item.description || ""}</div>`
+    ).join("");
+  } else {
+    resultsDiv.innerHTML = "<p>No results found</p>";
+  }
+});
+</script>
