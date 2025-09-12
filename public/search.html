@@ -8,7 +8,7 @@
     body { font-family: Arial, sans-serif; padding: 20px; }
     input { padding: 8px; width: 250px; margin-right: 8px; }
     button { padding: 8px 12px; margin-top: 5px; }
-    #results, #tcgResults, #randomCard { margin-top: 20px; }
+    #results, #tcgResults, #cardResult { margin-top: 20px; }
     .item, .tcg-card { padding: 10px; border-bottom: 1px solid #ccc; margin-bottom: 10px; }
   </style>
 </head>
@@ -22,17 +22,18 @@
   </form>
   <div id="results"></div>
 
-  <!-- TCGdex search -->
+  <!-- TCGdex search by name -->
   <form id="tcgForm" style="margin-top: 20px;">
     <input type="text" id="tcgQuery" placeholder="Enter TCGdex card name" required />
     <button type="submit">Search TCGdex</button>
   </form>
   <div id="tcgResults"></div>
 
-  <!-- Random card -->
-  <h2>Random Card</h2>
-  <button id="randomBtn">Get Random Card</button>
-  <div id="randomCard"></div>
+  <!-- Specific card by ID -->
+  <h2>Specific Card</h2>
+  <input type="text" id="cardId" placeholder="Enter card ID (e.g. swsh3-136)" />
+  <button id="getCardBtn">Get Card</button>
+  <div id="cardResult"></div>
 
   <script>
     const API_BASE = "https://cf-pages-worker-d1-app.thomasklai88.workers.dev";
@@ -55,11 +56,8 @@
           headers: { "Authorization": `Bearer ${token}` }
         });
         const data = await res.json();
-
-        if (data.results && data.results.length > 0) {
-          resultsDiv.innerHTML = data.results.map(item =>
-            `<div class="item"><strong>${item.name}</strong><br>${item.description || ""}</div>`
-          ).join("");
+        if (data.results?.length) {
+          resultsDiv.innerHTML = data.results.map(item => `<div class="item"><strong>${item.name}</strong><br>${item.description || ""}</div>`).join("");
         } else {
           resultsDiv.innerHTML = "<p>No results found in local DB</p>";
         }
@@ -78,15 +76,8 @@
       try {
         const res = await fetch(`${API_BASE}/api/tcgdex?q=${encodeURIComponent(query)}`);
         const data = await res.json();
-
-        if (data.results && data.results.length > 0) {
-          tcgDiv.innerHTML = data.results.map(card =>
-            `<div class="tcg-card">
-              <strong>${card.name}</strong> (${card.set || ""})<br>
-              <img src="${card.images?.small || ''}" alt="${card.name}" style="max-width:100px;"/><br>
-              ${card.text || ""}
-            </div>`
-          ).join("");
+        if (data.results?.length) {
+          tcgDiv.innerHTML = data.results.map(card => `<div class="tcg-card"><strong>${card.name}</strong> (${card.set || ""})<br><img src="${card.images?.small || ''}" alt="${card.name}" style="max-width:100px;"/><br>${card.text || ""}</div>`).join("");
         } else {
           tcgDiv.innerHTML = "<p>No TCGdex cards found</p>";
         }
@@ -95,29 +86,25 @@
       }
     });
 
-    // Random TCG card
-    document.getElementById("randomBtn").addEventListener("click", async () => {
-      const randomDiv = document.getElementById("randomCard");
-      randomDiv.innerHTML = "<p>Loading random card...</p>";
+    // Specific card by ID
+    document.getElementById("getCardBtn").addEventListener("click", async () => {
+      const cardDiv = document.getElementById("cardResult");
+      const cardId = document.getElementById("cardId").value.trim();
+      if (!cardId) return;
+
+      cardDiv.innerHTML = "<p>Loading card...</p>";
 
       try {
-        const res = await fetch(`${API_BASE}/api/tcgdex/random`);
+        const res = await fetch(`${API_BASE}/api/tcgdex/card/${encodeURIComponent(cardId)}`);
         const data = await res.json();
-
         if (data.card) {
           const card = data.card;
-          randomDiv.innerHTML = `
-            <div class="tcg-card">
-              <strong>${card.name}</strong> (${card.set || ""})<br>
-              <img src="${card.images?.small || ''}" alt="${card.name}" style="max-width:100px;"/><br>
-              ${card.text || ""}
-            </div>
-          `;
+          cardDiv.innerHTML = `<div class="tcg-card"><strong>${card.name}</strong> (${card.set || ""})<br><img src="${card.images?.small || ''}" alt="${card.name}" style="max-width:100px;"/><br>${card.text || ""}</div>`;
         } else {
-          randomDiv.innerHTML = "<p>No card found</p>";
+          cardDiv.innerHTML = "<p>Card not found</p>";
         }
       } catch (err) {
-        randomDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+        cardDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
       }
     });
   </script>
