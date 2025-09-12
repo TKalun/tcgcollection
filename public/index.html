@@ -3,121 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Search</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    input { padding: 8px; width: 250px; margin-right: 8px; }
-    button { padding: 8px 12px; margin-top: 5px; }
-    #results, #tcgResults, #randomCard { margin-top: 20px; }
-    .item, .tcg-card { padding: 10px; border-bottom: 1px solid #ccc; margin-bottom: 10px; }
-  </style>
+  <title>Login / Register</title>
 </head>
 <body>
-  <h1>Search Database & TCGdex</h1>
-
-  <!-- Local DB search -->
-  <form id="searchForm">
-    <input type="text" id="searchQuery" placeholder="Enter local DB search term" required />
-    <button type="submit">Search Local DB</button>
+  <h1>Register</h1>
+  <form id="registerForm">
+    <input type="text" id="regUsername" placeholder="Username" required />
+    <input type="password" id="regPassword" placeholder="Password" required />
+    <button type="submit">Register</button>
   </form>
-  <div id="results"></div>
 
-  <!-- TCGdex search -->
-  <form id="tcgForm" style="margin-top: 20px;">
-    <input type="text" id="tcgQuery" placeholder="Enter TCGdex card name" required />
-    <button type="submit">Search TCGdex</button>
+  <h1>Login</h1>
+  <form id="loginForm">
+    <input type="text" id="loginUsername" placeholder="Username" required />
+    <input type="password" id="loginPassword" placeholder="Password" required />
+    <button type="submit">Login</button>
   </form>
-  <div id="tcgResults"></div>
-
-  <!-- Random card -->
-  <h2>Random Card</h2>
-  <button id="randomBtn">Get Random Card</button>
-  <div id="randomCard"></div>
 
   <script>
     const API_BASE = "https://cf-pages-worker-d1-app.thomasklai88.workers.dev";
-    const token = localStorage.getItem("token");
 
-    if (!token) {
-      alert("You must log in first!");
-      window.location.href = "index.html";
-    }
-
-    // Local DB search
-    document.getElementById("searchForm").addEventListener("submit", async (e) => {
+    // --------------------------
+    // Registration
+    // --------------------------
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const query = document.getElementById("searchQuery").value;
-      const resultsDiv = document.getElementById("results");
-      resultsDiv.innerHTML = "<p>Searching local database...</p>";
+      const username = document.getElementById("regUsername").value;
+      const password = document.getElementById("regPassword").value;
 
       try {
-        const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}`, {
-          headers: { "Authorization": `Bearer ${token}` }
+        const res = await fetch(`${API_BASE}/api/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        alert(data.success ? "Registered successfully" : data.error);
+      } catch (err) {
+        console.error(err);
+      }
+    });
+
+    // --------------------------
+    // Login
+    // --------------------------
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const username = document.getElementById("loginUsername").value;
+      const password = document.getElementById("loginPassword").value;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
         });
         const data = await res.json();
 
-        if (data.results && data.results.length > 0) {
-          resultsDiv.innerHTML = data.results.map(item =>
-            `<div class="item"><strong>${item.name}</strong><br>${item.description || ""}</div>`
-          ).join("");
+        if (data.success) {
+          // Save JWT token
+          localStorage.setItem("token", data.token);
+          // Redirect to search page
+          window.location.href = "search.html";
         } else {
-          resultsDiv.innerHTML = "<p>No results found in local DB</p>";
+          alert(data.error || "Login failed");
         }
       } catch (err) {
-        resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
-      }
-    });
-
-    // TCGdex search by name
-    document.getElementById("tcgForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const query = document.getElementById("tcgQuery").value;
-      const tcgDiv = document.getElementById("tcgResults");
-      tcgDiv.innerHTML = "<p>Searching TCGdex...</p>";
-
-      try {
-        const res = await fetch(`${API_BASE}/api/tcgdex?q=${encodeURIComponent(query)}`);
-        const data = await res.json();
-
-        if (data.results && data.results.length > 0) {
-          tcgDiv.innerHTML = data.results.map(card =>
-            `<div class="tcg-card">
-              <strong>${card.name}</strong> (${card.set || ""})<br>
-              <img src="${card.images?.small || ''}" alt="${card.name}" style="max-width:100px;"/><br>
-              ${card.text || ""}
-            </div>`
-          ).join("");
-        } else {
-          tcgDiv.innerHTML = "<p>No TCGdex cards found</p>";
-        }
-      } catch (err) {
-        tcgDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
-      }
-    });
-
-    // Random TCG card
-    document.getElementById("randomBtn").addEventListener("click", async () => {
-      const randomDiv = document.getElementById("randomCard");
-      randomDiv.innerHTML = "<p>Loading random card...</p>";
-
-      try {
-        const res = await fetch(`${API_BASE}/api/tcgdex/random`);
-        const data = await res.json();
-
-        if (data.card) {
-          const card = data.card;
-          randomDiv.innerHTML = `
-            <div class="tcg-card">
-              <strong>${card.name}</strong> (${card.set || ""})<br>
-              <img src="${card.images?.small || ''}" alt="${card.name}" style="max-width:100px;"/><br>
-              ${card.text || ""}
-            </div>
-          `;
-        } else {
-          randomDiv.innerHTML = "<p>No card found</p>";
-        }
-      } catch (err) {
-        randomDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+        console.error(err);
       }
     });
   </script>
