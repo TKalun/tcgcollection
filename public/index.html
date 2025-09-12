@@ -22,8 +22,8 @@
 
   <script>
     const API_BASE = "https://cf-pages-worker-d1-app.thomasklai88.workers.dev"; 
-    // replace with http://localhost:8787 if running wrangler dev
 
+    // Registration handler
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const username = document.getElementById("regUsername").value;
@@ -42,6 +42,7 @@
       }
     });
 
+    // Login handler
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const username = document.getElementById("loginUsername").value;
@@ -54,7 +55,13 @@
           body: JSON.stringify({ username, password })
         });
         const data = await res.json();
-        alert(JSON.stringify(data));
+
+        if (data.success) {
+          // Redirect to search.html
+          window.location.href = "search.html";
+        } else {
+          alert(data.error || "Login failed");
+        }
       } catch (err) {
         console.error(err);
       }
