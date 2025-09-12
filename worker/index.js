@@ -12,15 +12,12 @@ function withCors(response) {
   });
 }
 
-const JWT_SECRET = new TextEncoder().encode("MFP4x1ee9Kqx1FVpVct9nEFz+j12JZrvz5MmJBQRbms=");
+const JWT_SECRET = new TextEncoder().encode("YOUR_SECRET_KEY");
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // ------------------------
-    // Handle OPTIONS
-    // ------------------------
     if (request.method === "OPTIONS") {
       return new Response(null, {
         headers: {
@@ -38,15 +35,11 @@ export default {
       try {
         const { username, password } = await request.json();
         if (!username || !password)
-          return withCors(
-            new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 })
-          );
+          return withCors(new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 }));
 
         const pwBuffer = new TextEncoder().encode(password);
         const hashedBuffer = await crypto.subtle.digest("SHA-256", pwBuffer);
-        const hashedPassword = btoa(
-          String.fromCharCode(...new Uint8Array(hashedBuffer))
-        );
+        const hashedPassword = btoa(String.fromCharCode(...new Uint8Array(hashedBuffer)));
 
         await env.DB.prepare(
           "INSERT INTO users (username, password) VALUES (?, ?)"
@@ -69,30 +62,20 @@ export default {
           "SELECT * FROM users WHERE username = ?"
         ).bind(username).first();
 
-        if (!user)
-          return withCors(
-            new Response(JSON.stringify({ error: "User not found" }), { status: 404 })
-          );
+        if (!user) return withCors(new Response(JSON.stringify({ error: "User not found" }), { status: 404 }));
 
         const pwBuffer = new TextEncoder().encode(password);
         const hashedBuffer = await crypto.subtle.digest("SHA-256", pwBuffer);
-        const hashedPassword = btoa(
-          String.fromCharCode(...new Uint8Array(hashedBuffer))
-        );
+        const hashedPassword = btoa(String.fromCharCode(...new Uint8Array(hashedBuffer)));
 
-        if (hashedPassword !== user.password)
-          return withCors(
-            new Response(JSON.stringify({ error: "Invalid password" }), { status: 401 })
-          );
+        if (hashedPassword !== user.password) return withCors(new Response(JSON.stringify({ error: "Invalid password" }), { status: 401 }));
 
         const token = await new jose.SignJWT({ username })
           .setProtectedHeader({ alg: "HS256", typ: "JWT" })
           .setExpirationTime("1h")
           .sign(JWT_SECRET);
 
-        return withCors(
-          new Response(JSON.stringify({ success: true, token }), { status: 200 })
-        );
+        return withCors(new Response(JSON.stringify({ success: true, token }), { status: 200 }));
       } catch (err) {
         return withCors(new Response(JSON.stringify({ error: err.message }), { status: 500 }));
       }
@@ -104,18 +87,13 @@ export default {
     if (url.pathname === "/api/search" && request.method === "GET") {
       try {
         const authHeader = request.headers.get("Authorization");
-        if (!authHeader)
-          return withCors(
-            new Response(JSON.stringify({ error: "Missing token" }), { status: 401 })
-          );
+        if (!authHeader) return withCors(new Response(JSON.stringify({ error: "Missing token" }), { status: 401 }));
 
         const token = authHeader.split(" ")[1];
         try {
           await jose.jwtVerify(token, JWT_SECRET);
         } catch {
-          return withCors(
-            new Response(JSON.stringify({ error: "Invalid token" }), { status: 401 })
-          );
+          return withCors(new Response(JSON.stringify({ error: "Invalid token" }), { status: 401 }));
         }
 
         const q = url.searchParams.get("q") || "";
@@ -123,33 +101,22 @@ export default {
           "SELECT * FROM items WHERE name LIKE ? OR description LIKE ?"
         ).bind(`%${q}%`, `%${q}%`).all();
 
-        return withCors(
-          new Response(JSON.stringify({ results: rows.results }), {
-            headers: { "Content-Type": "application/json" }
-          })
-        );
+        return withCors(new Response(JSON.stringify({ results: rows.results }), { headers: { "Content-Type": "application/json" } }));
       } catch (err) {
         return withCors(new Response(JSON.stringify({ error: err.message }), { status: 500 }));
       }
     }
 
     // ------------------------
-    // TCGdex Search (by name)
+    // TCGdex Search (REST API)
     // ------------------------
     if (url.pathname === "/api/tcgdex" && request.method === "GET") {
       try {
         const q = url.searchParams.get("q") || "charizard";
-
-        const res = await fetch(
-          `https://api.tcgdex.net/v2/en/cards?name=${encodeURIComponent(q)}`
-        );
+        const res = await fetch(`https://api.tcgdex.net/v2/en/cards?name=${encodeURIComponent(q)}`);
         const data = await res.json();
 
-        return withCors(
-          new Response(JSON.stringify({ results: data.data || [] }), {
-            headers: { "Content-Type": "application/json" }
-          })
-        );
+        return withCors(new Response(JSON.stringify({ results: data.data || [] }), { headers: { "Content-Type": "application/json" } }));
       } catch (err) {
         return withCors(new Response(JSON.stringify({ error: err.message }), { status: 500 }));
       }
@@ -163,18 +130,12 @@ export default {
         const res = await fetch("https://api.tcgdex.net/v2/en/cards?limit=100");
         const data = await res.json();
         const cards = data.data || [];
-        if (!cards.length)
-          return withCors(
-            new Response(JSON.stringify({ error: "No cards found" }), { status: 404 })
-          );
+
+        if (!cards.length) return withCors(new Response(JSON.stringify({ error: "No cards found" }), { status: 404 }));
 
         const randomCard = cards[Math.floor(Math.random() * cards.length)];
 
-        return withCors(
-          new Response(JSON.stringify({ card: randomCard }), {
-            headers: { "Content-Type": "application/json" }
-          })
-        );
+        return withCors(new Response(JSON.stringify({ card: randomCard }), { headers: { "Content-Type": "application/json" } }));
       } catch (err) {
         return withCors(new Response(JSON.stringify({ error: err.message }), { status: 500 }));
       }
