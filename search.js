@@ -52,7 +52,8 @@ document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
   cardDiv.innerHTML = "<p>Loading card...</p>";
 
   try {
-    const res = await fetch(`${API_BASE}/api/tcgdex/card/${encodeURIComponent(cardId)}`);
+    // Use the TCGdex public API directly
+    const res = await fetch(`https://api.tcgdex.net/cards/${encodeURIComponent(cardId)}`);
 
     if (!res.ok) throw new Error(`Server returned ${res.status}`);
 
@@ -69,7 +70,7 @@ document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
 
   } catch (err) {
     if (err.message.includes("Failed to fetch")) {
-      cardDiv.innerHTML = `<p style="color:red;">Network or CORS error: Unable to fetch card. Make sure your Worker is deployed with CORS headers.</p>`;
+      cardDiv.innerHTML = `<p style="color:red;">Network or CORS error: Unable to fetch card from TCGdex API.</p>`;
     } else {
       cardDiv.innerHTML = `<p style="color:red;">Error fetching card: ${err.message}</p>`;
     }
