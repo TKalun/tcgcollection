@@ -2,20 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Search</title>
+  <title>TCGdex Card Search</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
-    input { padding: 8px; width: 250px; margin-right: 8px; }
-    button { padding: 8px 12px; margin-top: 5px; }
-    #results, #tcgResults, #cardResult { margin-top: 20px; }
-    .item, .tcg-card { padding: 10px; border-bottom: 1px solid #ccc; margin-bottom: 10px; }
-    .field { margin-left: 10px; }
+    .card { margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; max-width: 400px; }
+    .card img { max-width: 100%; border-radius: 8px; }
+    .error { color: red; margin-top: 10px; }
   </style>
 </head>
 <body>
-  <h1>Search Database & TCGdex</h1>
-
   <!-- Local DB search -->
   <form id="searchForm">
     <input type="text" id="searchQuery" placeholder="Enter local DB search term" required />
@@ -23,102 +18,90 @@
   </form>
   <div id="results"></div>
 
-  <!-- TCGdex search by name -->
-  <form id="tcgForm" style="margin-top: 20px;">
-    <input type="text" id="tcgQuery" placeholder="Enter TCGdex card name" required />
-    <button type="submit">Search TCGdex</button>
-  </form>
-  <div id="tcgResults"></div>
+  <h1>TCGdex Card Search</h1>
 
-  <!-- Specific card test -->
-  <h2>Specific Card Test (swsh3-136)</h2>
-  <button id="getCardBtn">Get Test Card</button>
-  <div id="cardResult"></div>
+  <input type="text" id="searchInput" placeholder="Enter card ID (swsh3-136) or name (Charizard)">
+  <button onclick="searchCard()">Search</button>
+
+  <div id="result"></div>
 
   <script>
-    const API_BASE = "https://cf-pages-worker-d1-app.thomasklai88.workers.dev";
-    const token = localStorage.getItem("token");
+    const API_BASE = "https://api.tcgdex.net/v2/en";
 
-    if (!token) {
-      alert("You must log in first!");
-      window.location.href = "index.html";
-    }
+    // Local DB search (dummy example with hardcoded data for now)
+    const localDB = [
+      { id: "001", name: "Pikachu", type: "Electric" },
+      { id: "002", name: "Charmander", type: "Fire" },
+      { id: "003", name: "Squirtle", type: "Water" }
+    ];
 
-    // Helper: Convert object to HTML list recursively
-    function renderObject(obj) {
-      if (!obj || typeof obj !== 'object') return obj || '';
-      return `<ul>` + Object.entries(obj).map(([k, v]) => {
-        if (Array.isArray(v)) v = v.map(i => renderObject(i)).join('');
-        else if (typeof v === "object") v = renderObject(v);
-        return `<li><strong>${k}:</strong> <span class="field">${v}</span></li>`;
-      }).join('') + `</ul>`;
-    }
-
-    // --------------------------
-    // Local DB search
-    // --------------------------
-    document.getElementById("searchForm").addEventListener("submit", async (e) => {
+    document.getElementById("searchForm").addEventListener("submit", function (e) {
       e.preventDefault();
-      const query = document.getElementById("searchQuery").value;
+      const query = document.getElementById("searchQuery").value.trim().toLowerCase();
       const resultsDiv = document.getElementById("results");
-      resultsDiv.innerHTML = "<p>Searching local database...</p>";
+      resultsDiv.innerHTML = "";
 
-      try {
-        const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}`, {
-          headers: { "Authorization": `Bearer ${token}` }
+      const matches = localDB.filter(card =>
+        card.name.toLowerCase().includes(query) || card.id.includes(query)
+      );
+
+      if (matches.length === 0) {
+        resultsDiv.innerHTML = "<p class='error'>No results found in local DB.</p>";
+      } else {
+        matches.forEach(card => {
+          resultsDiv.innerHTML += `<p><strong>${card.name}</strong> (ID: ${card.id}, Type: ${card.type})</p>`;
         });
-        const data = await res.json();
-        if (data.results?.length) {
-          resultsDiv.innerHTML = data.results.map(item => `<div class="item">${renderObject(item)}</div>`).join("");
-        } else {
-          resultsDiv.innerHTML = "<p>No results found in local DB</p>";
-        }
-      } catch (err) {
-        resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
       }
     });
 
-    // --------------------------
-    // TCGdex search by name
-    // --------------------------
-    document.getElementById("tcgForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const query = document.getElementById("tcgQuery").value;
-      const tcgDiv = document.getElementById("tcgResults");
-      tcgDiv.innerHTML = "<p>Searching TCGdex...</p>";
+    // TCGdex search
+    async function searchCard() {
+      const input = document.getElementById("searchInput").value.trim();
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
+
+      if (!input) {
+        resultDiv.innerHTML = "<p class='error'>Please enter a card ID or name.</p>";
+        return;
+      }
 
       try {
-        const res = await fetch(`${API_BASE}/api/tcgdex?q=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        const cards = data.data || [];
-        if (cards.length) {
-          tcgDiv.innerHTML = cards.map(card => `<div class="tcg-card">${renderObject(card)}</div>`).join("");
+        let res, data;
+
+        if (input.includes("-")) {
+          // Search by card ID
+          res = await fetch(`${API_BASE}/cards/${encodeURIComponent(input)}`);
+          if (!res.ok) throw new Error("Card not found");
+          data = await res.json();
+          displayCard(data);
         } else {
-          tcgDiv.innerHTML = "<p>No TCGdex cards found</p>";
+          // Search by name
+          res = await fetch(`${API_BASE}/cards`);
+          if (!res.ok) throw new Error("Failed to fetch card list");
+          const allCards = await res.json();
+          const matches = allCards.filter(c => c.name.toLowerCase().includes(input.toLowerCase()));
+
+          if (matches.length === 0) throw new Error("No cards found by that name");
+
+          data = matches[0]; // Show first match
+          displayCard(data);
         }
       } catch (err) {
-        tcgDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+        resultDiv.innerHTML = `<p class='error'>${err.message}</p>`;
       }
-    });
+    }
 
-    // --------------------------
-    // Specific card test (swsh3-136)
-    // --------------------------
-    document.getElementById("getCardBtn").addEventListener("click", async () => {
-      const cardDiv = document.getElementById("cardResult");
-      cardDiv.innerHTML = "<p>Loading card...</p>";
-
-      try {
-        const res = await fetch(`${API_BASE}/api/tcgdex/card/swsh3-136`);
-        const data = await res.json();
-        console.log(data); // debug
-
-        const cardData = data.data || data;
-        cardDiv.innerHTML = `<div class="tcg-card">${renderObject(cardData)}</div>`;
-      } catch (err) {
-        cardDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
-      }
-    });
+    function displayCard(data) {
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = `
+        <div class="card">
+          <h2>${data.name}</h2>
+          <p><strong>Set:</strong> ${data.set?.name || "Unknown"}</p>
+          <p><strong>Rarity:</strong> ${data.rarity || "Unknown"}</p>
+          <img src="${data.image}" alt="${data.name}">
+        </div>
+      `;
+    }
   </script>
 </body>
 </html>
