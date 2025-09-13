@@ -58,7 +58,7 @@ export default {
                                        .bind(table)
                                        .all();
         if (!tablesRes.results.length) {
-          return new Response(JSON.stringify({ error: `Table "${table}" does not exist in D1 database` }), {
+          return new Response(JSON.stringify({ error: `Table "test" does not exist in D1 database` }), {
             status: 400,
             headers: { "Content-Type": "application/json", ...corsHeaders }
           });
