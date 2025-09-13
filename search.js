@@ -1,10 +1,12 @@
 // ------------------------
 // Import TCGdex SDK
 // ------------------------
-import { TCGdex, Query } from "https://cdn.skypack.dev/@tcgdex/sdk";
-
-// Initialize TCGdex client
-const tcgdex = new TCGdex("en");
+ // ✅ Import from unpkg so browser supports named exports
+    
+    import TCGdex, { Query } from 'https://unpkg.com/@tcgdex/sdk?module';
+    const tcgdex = new TCGdex("en");
+    
+    console.log("TCGdex SDK loaded:", tcgdex);
 
 // ------------------------
 // Local DB search
@@ -41,57 +43,62 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
 // ------------------------
 // TCGdex card search (by Name or ID)
 // ------------------------
-document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const queryVal = document.getElementById("tcgIdQuery").value.trim();
-  const cardDiv = document.getElementById("cardResult");
-  cardDiv.innerHTML = "<p>Searching TCGdex...</p>";
+const resultsDiv = document.getElementById("results");
 
+    document.getElementById("searchBtn").addEventListener("click", async () => {
+      const queryVal = document.getElementById("cardQuery").value.trim();
+      resultsDiv.innerHTML = "<p>Searching...</p>";
+      console.log("Search query:", queryVal);
+
+      try {
+  let results = [];
+  let card = null;
+
+  // Try fetching by exact ID first
   try {
-    let results = [];
-
-    // Detect ID format like swsh3-136
-    if (/^[a-z]+\d+-\d+$/i.test(queryVal)) {
-      const [setCode, number] = queryVal.split("-");
-      results = [{
-        id: queryVal,
-        name: queryVal,
-        set: { id: setCode, name: setCode.toUpperCase() },
-        number,
-        image: `https://assets.tcgdex.net/en/swsh/${setCode}/${number}/high.png`,
-        rarity: "Unknown",
-        hp: "N/A",
-        types: []
-      }];
-    } else {
-      // Name search with SDK
-      results = await tcgdex.card.list(new Query().equal("name", queryVal));
+    card = await tcgdex.card.get(queryVal);
+    if (card) {
+      results.push(card);
     }
+  } catch (err) {
+    console.log("Not an exact ID, trying name search...");
+  }
 
-    if (!results || results.length === 0) {
-      cardDiv.innerHTML = `<p>No TCGdex cards found for "${queryVal}".</p>`;
-      return;
-    }
+  // If no card found by ID, search by name
+  if (results.length === 0) {
+    results = await tcgdex.card.list(new Query().equal("name", queryVal));
+    console.log("SDK response:", results);
+  }
 
-    // Render results
-    cardDiv.innerHTML = results.map(card => {
-      const imgUrl = card.image || (card.set && card.number ? 
-        `https://assets.tcgdex.net/en/${card.set.id}/${card.number}/high.png` : "");
+  // No results at all
+  if (!results || results.length === 0) {
+    resultsDiv.innerHTML = `<p>No cards found for "${queryVal}"</p>`;
+    return;
+  }
+
+  // Render each card
+  resultsDiv.innerHTML = results
+    .map(c => {
+      const imgUrl = c.getImageURL ? c.getImageURL("high", "png") : "";
       return `
         <div class="card">
-          ${imgUrl ? `<img src="${imgUrl}" alt="${card.name}" />` : ""}
-          <h3>${card.name || "Unknown Name"}</h3>
-          <p><strong>Set:</strong> ${card.set?.name || "Unknown"}</p>
-          <p><strong>ID:</strong> ${card.id || card.number || "N/A"}</p>
-          <p><strong>Rarity:</strong> ${card.rarity || "N/A"}</p>
-          <p><strong>HP:</strong> ${card.hp || "N/A"}</p>
-          <p><strong>Types:</strong> ${(card.types && card.types.length ? card.types.join(", ") : "N/A")}</p>
+          ${imgUrl ? `<img src="${imgUrl}" alt="${c.name || "Unknown"}" />` : ""}
+          <h3>${c.name || "Unknown Name"}</h3>
+          <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
+          <p><strong>ID:</strong> ${c.id || c.number || "N/A"}</p>
+          <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
+          <p><strong>HP:</strong> ${c.hp || "N/A"}</p>
+          <p><strong>Types:</strong> ${(c.types && c.types.length ? c.types.join(", ") : "N/A")}</p>
         </div>
       `;
-    }).join("");
+    })
+    .join("");
 
-  } catch (err) {
-    console.error(err);
-    cardDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
-  }
-});
+} catch (err) {
+  console.error("Error fetching cards:", err);
+  resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+}
+
+
+      
+    });

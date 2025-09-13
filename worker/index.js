@@ -81,34 +81,7 @@ export default {
       }
     }
 
-    // ------------------------
-    // TCGdex card ID search (direct asset)
-    // ------------------------
-    const cardIdMatch = path.match(/^\/api\/tcgdex\/card\/(.+)$/);
-    if (cardIdMatch && method === "GET") {
-      const cardId = cardIdMatch[1];
-
-      try {
-        const [setCode, number] = cardId.split("-");
-        if (!setCode || !number) throw new Error("Invalid card ID format");
-
-        const imgUrl = `https://assets.tcgdex.net/en/swsh/${setCode}/${number}/high.png`;
-
-        // Return JSON with card ID and image URL
-        return new Response(JSON.stringify({
-          cardId,
-          imgUrl
-        }), {
-          headers: { "Content-Type": "application/json", ...corsHeaders }
-        });
-
-      } catch (err) {
-        return new Response(JSON.stringify({ error: err.message }), {
-          status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders }
-        });
-      }
-    }
+    
 
     // Default 404
     return new Response(JSON.stringify({ error: "Not found" }), {
