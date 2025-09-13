@@ -55,11 +55,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // ------------------------
   // TCGdex card search
   // ------------------------
-  const searchBtn = document.getElementById("tcgIdForm");
+  const searchForm = document.getElementById("tcgIdForm");
   const cardQueryInput = document.getElementById("tcgIdQuery");
+  const resultsDiv = document.getElementById("results");
 
-  searchBtn?.addEventListener("submit", async () => {
+  searchForm?.addEventListener("submit", async (e) => {
+    e.preventDefault(); // stop page refresh
     if (!cardQueryInput || !resultsDiv) return;
+
     const queryVal = cardQueryInput.value.trim();
     resultsDiv.innerHTML = "<p>Searching...</p>";
     console.log("Search query:", queryVal);
@@ -98,12 +101,11 @@ document.addEventListener("DOMContentLoaded", () => {
               <p><strong>ID:</strong> ${c.id || c.number || "N/A"}</p>
               <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
               <p><strong>HP:</strong> ${c.hp || "N/A"}</p>
-              <p><strong>Types:</strong> ${(c.types && c.types.length ? c.types.join(", ") : "N/A")}</p>
+              <p><strong>Types:</strong> ${(c.types?.length ? c.types.join(", ") : "N/A")}</p>
             </div>
           `;
         })
         .join("");
-
     } catch (err) {
       console.error("Error fetching cards:", err);
       resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
