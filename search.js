@@ -43,31 +43,44 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
 });
 
 // ------------------------
-// TCGdex card ID search (direct asset URL)
+// TCGdex card ID search (API + image)
 // ------------------------
-document.getElementById("tcgIdForm").addEventListener("submit", (e) => {
+document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const cardId = document.getElementById("tcgIdQuery").value.trim();
   const cardDiv = document.getElementById("cardResult");
-  cardDiv.innerHTML = "<p>Loading card image...</p>";
+  cardDiv.innerHTML = "<p>Loading card data...</p>";
 
   try {
     // Example: "swsh3-136" → ["swsh3", "136"]
     const [setCode, number] = cardId.split("-");
     if (!setCode || !number) throw new Error("Invalid card ID format. Use format like swsh3-136.");
 
+    // Build API endpoint for card data
+    const apiUrl = `https://api.tcgdex.net/v2/en/${setCode}/${number}`;
     const imgUrl = `https://assets.tcgdex.net/en/swsh/${setCode}/${number}/high.png`;
 
-    // Display card image and ID
+    // Fetch JSON card data from TCGdex API
+    const res = await fetch(apiUrl);
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    const cardData = await res.json();
+
+    // Display card details + image
     cardDiv.innerHTML = `
       <img class="card-image" src="${imgUrl}" alt="${cardId}" />
-      <p>Card ID: ${cardId}</p>
+      <h3>${cardData.name || "Unknown Name"}</h3>
+      <p><strong>Set:</strong> ${cardData.set?.name || setCode}</p>
+      <p><strong>Rarity:</strong> ${cardData.rarity || "Unknown"}</p>
+      <p><strong>HP:</strong> ${cardData.hp || "N/A"}</p>
+      <p><strong>Types:</strong> ${(cardData.types || []).join(", ") || "N/A"}</p>
+      <p><strong>Card ID:</strong> ${cardId}</p>
     `;
 
   } catch (err) {
     cardDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
   }
 });
+
 
 // ------------------------
 // Logout button
