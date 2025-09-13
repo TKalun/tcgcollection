@@ -1,7 +1,6 @@
 name = "cf-pages-worker-d1-app"
 main = "worker/index.js"
 compatibility_date = "2025-09-13"
-type = "javascript"
 
 [[d1_databases]]
 binding = "DB"
