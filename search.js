@@ -6,7 +6,7 @@ const tcgdex = new TCGdex("en");
 
 console.log("TCGdex SDK loaded:", tcgdex);
 
-document.addEventListener("DOMContentLoaded", () => {
+
   // ------------------------
 // Local DB search
 // ------------------------
@@ -38,7 +38,7 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
     resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
   }
 });
-
+document.addEventListener("DOMContentLoaded", () => {
   // ------------------------
   // TCGdex card search
   // ------------------------
