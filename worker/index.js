@@ -38,21 +38,41 @@ export default {
     }
 
     // ------------------------
-    // Local DB search
+    // Local DB search (dynamic table)
     // ------------------------
     if (path === "/api/search" && method === "GET") {
       const token = req.headers.get("Authorization")?.replace("Bearer ", "");
-      if (!token) return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json", ...corsHeaders }
-      });
+      if (!token) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      }
 
       const q = url.searchParams.get("q") || "";
+      const table = "cards"; // change to your D1 table name
+
       try {
-        const stmt = await env.DB.prepare("SELECT * FROM cards WHERE name LIKE ?")
+        // Check if table exists
+        const tablesRes = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
+                                       .bind(table)
+                                       .all();
+        if (!tablesRes.results.length) {
+          return new Response(JSON.stringify({ error: `Table "${table}" does not exist in D1 database` }), {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders }
+          });
+        }
+
+        // Query table
+        const stmt = await env.DB.prepare(`SELECT * FROM ${table} WHERE name LIKE ?`)
                                    .bind(`%${q}%`)
                                    .all();
-        return new Response(JSON.stringify({ results: stmt.results }), { headers: { "Content-Type": "application/json", ...corsHeaders } });
+
+        return new Response(JSON.stringify({ results: stmt.results }), {
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+
       } catch (err) {
         return new Response(JSON.stringify({ error: err.message }), {
           status: 500,
@@ -62,35 +82,29 @@ export default {
     }
 
     // ------------------------
-    // TCGdex search by name
-    // ------------------------
-    if (path === "/api/tcgdex" && method === "GET") {
-      const q = url.searchParams.get("q") || "";
-      try {
-        const apiRes = await fetch(`https://api.tcgdex.net/cards?q=${encodeURIComponent(q)}`);
-        const data = await apiRes.json();
-        return new Response(JSON.stringify({ data: data.data || [] }), { headers: { "Content-Type": "application/json", ...corsHeaders } });
-      } catch (err) {
-        return new Response(JSON.stringify({ error: err.message }), {
-          status: 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders }
-        });
-      }
-    }
-
-    // ------------------------
-    // TCGdex card by ID
+    // TCGdex card ID search (direct asset)
     // ------------------------
     const cardIdMatch = path.match(/^\/api\/tcgdex\/card\/(.+)$/);
     if (cardIdMatch && method === "GET") {
       const cardId = cardIdMatch[1];
+
       try {
-        const apiRes = await fetch(`https://api.tcgdex.net/cards/${encodeURIComponent(cardId)}`);
-        const data = await apiRes.json();
-        return new Response(JSON.stringify({ data: data }), { headers: { "Content-Type": "application/json", ...corsHeaders } });
+        const [setCode, number] = cardId.split("-");
+        if (!setCode || !number) throw new Error("Invalid card ID format");
+
+        const imgUrl = `https://assets.tcgdex.net/en/swsh/${setCode}/${number}/high.png`;
+
+        // Return JSON with card ID and image URL
+        return new Response(JSON.stringify({
+          cardId,
+          imgUrl
+        }), {
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+
       } catch (err) {
         return new Response(JSON.stringify({ error: err.message }), {
-          status: 500,
+          status: 400,
           headers: { "Content-Type": "application/json", ...corsHeaders }
         });
       }
