@@ -52,20 +52,18 @@ document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
   cardDiv.innerHTML = "<p>Loading card...</p>";
 
   try {
-    // Example format: "swsh3-136"
-    const [setCode, number] = cardId.split("-");
-    if (!setCode || !number) throw new Error("Invalid card ID format. Use format like swsh3-136.");
+    const res = await fetch(`${API_BASE}/api/tcgdex/card/${encodeURIComponent(cardId)}`);
+    if (!res.ok) throw new Error(`Server returned ${res.status}`);
 
-    // Construct the direct asset URL
-    const imgUrl = `https://assets.tcgdex.net/en/swsh/${setCode}/${number}/high.png`;
+    const data = await res.json();
+    if (!data.imgUrl) throw new Error("Invalid card ID or image not found");
 
-    // Display card image and ID
     cardDiv.innerHTML = `
-      <img class="card-image" src="${imgUrl}" alt="${cardId}" />
-      <p>Card ID: ${cardId}</p>
+      <img class="card-image" src="${data.imgUrl}" alt="${data.cardId}" />
+      <p>Card ID: ${data.cardId}</p>
     `;
   } catch (err) {
-    cardDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+    cardDiv.innerHTML = `<p style="color:red;">Error fetching card: ${err.message}</p>`;
   }
 });
 
