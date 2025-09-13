@@ -43,29 +43,36 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
 });
 
 // ------------------------
-// TCGdex card ID search (direct asset)
+// TCGdex card ID search (external API)
 // ------------------------
 document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const cardId = document.getElementById("tcgIdQuery").value.trim();
   const cardDiv = document.getElementById("cardResult");
-  cardDiv.innerHTML = "<p>Loading card...</p>";
+  cardDiv.innerHTML = "<p>Loading card from TCGdex API...</p>";
 
   try {
-    const res = await fetch(`${API_BASE}/api/tcgdex/card/${encodeURIComponent(cardId)}`);
-    if (!res.ok) throw new Error(`Server returned ${res.status}`);
+    // Fetch directly from TCGdex API
+    const res = await fetch(`https://api.tcgdex.net/cards/${encodeURIComponent(cardId)}`);
+    if (!res.ok) throw new Error(`TCGdex API returned ${res.status}`);
 
     const data = await res.json();
-    if (!data.imgUrl) throw new Error("Invalid card ID or image not found");
+    const cardData = data.data || data;
 
-    cardDiv.innerHTML = `
-      <img class="card-image" src="${data.imgUrl}" alt="${data.cardId}" />
-      <p>Card ID: ${data.cardId}</p>
-    `;
+    // Construct the card image URL if available
+    let imgHtml = '';
+    if (cardData.set?.code && cardData.number) {
+      const imgUrl = `https://assets.tcgdex.net/en/${cardData.set.code}/${cardData.set.code}/${cardData.number}/high.png`;
+      imgHtml = `<img class="card-image" src="${imgUrl}" alt="${cardData.name || cardId}" />`;
+    }
+
+    cardDiv.innerHTML = imgHtml + `<div class="tcg-card">${renderObject(cardData)}</div>`;
+
   } catch (err) {
-    cardDiv.innerHTML = `<p style="color:red;">Error fetching card: ${err.message}</p>`;
+    cardDiv.innerHTML = `<p style="color:red;">Error fetching TCGdex card: ${err.message}</p>`;
   }
 });
+
 
 // ------------------------
 // Logout button
