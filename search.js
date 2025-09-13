@@ -17,7 +17,7 @@ function renderObject(obj) {
 }
 
 // ------------------------
-// Local DB search (D1)
+// Local DB search (D1 via Worker)
 // ------------------------
 document.getElementById("searchForm").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -43,36 +43,31 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
 });
 
 // ------------------------
-// TCGdex card ID search (external API)
+// TCGdex card ID search (direct asset URL)
 // ------------------------
-document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
+document.getElementById("tcgIdForm").addEventListener("submit", (e) => {
   e.preventDefault();
   const cardId = document.getElementById("tcgIdQuery").value.trim();
   const cardDiv = document.getElementById("cardResult");
-  cardDiv.innerHTML = "<p>Loading card from TCGdex API...</p>";
+  cardDiv.innerHTML = "<p>Loading card image...</p>";
 
   try {
-    // Fetch directly from TCGdex API
-    const res = await fetch(`https://api.tcgdex.net/cards/${encodeURIComponent(cardId)}`);
-    if (!res.ok) throw new Error(`TCGdex API returned ${res.status}`);
+    // Example: "swsh3-136" → ["swsh3", "136"]
+    const [setCode, number] = cardId.split("-");
+    if (!setCode || !number) throw new Error("Invalid card ID format. Use format like swsh3-136.");
 
-    const data = await res.json();
-    const cardData = data.data || data;
+    const imgUrl = `https://assets.tcgdex.net/en/swsh/${setCode}/${number}/high.png`;
 
-    // Construct the card image URL if available
-    let imgHtml = '';
-    if (cardData.set?.code && cardData.number) {
-      const imgUrl = `https://assets.tcgdex.net/en/${cardData.set.code}/${cardData.set.code}/${cardData.number}/high.png`;
-      imgHtml = `<img class="card-image" src="${imgUrl}" alt="${cardData.name || cardId}" />`;
-    }
-
-    cardDiv.innerHTML = imgHtml + `<div class="tcg-card">${renderObject(cardData)}</div>`;
+    // Display card image and ID
+    cardDiv.innerHTML = `
+      <img class="card-image" src="${imgUrl}" alt="${cardId}" />
+      <p>Card ID: ${cardId}</p>
+    `;
 
   } catch (err) {
-    cardDiv.innerHTML = `<p style="color:red;">Error fetching TCGdex card: ${err.message}</p>`;
+    cardDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
   }
 });
-
 
 // ------------------------
 // Logout button
