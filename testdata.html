@@ -20,6 +20,7 @@
   <script type="module">
     // ✅ Import from unpkg so browser supports named exports
     import * as TCGdexSDK from "https://unpkg.com/@tcgdex/sdk?module";
+    console.log(TCGdexSDK);
     const { TCGdex, Query } = TCGdexSDK;
 
     const tcgdex = new TCGdex("en");
