@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ------------------------
   const searchForm = document.getElementById("tcgIdForm");
   const cardQueryInput = document.getElementById("tcgIdQuery");
-  const resultsDiv = document.getElementById("results");
+  const resultsDiv = document.getElementById("cardResults");
 
   searchForm?.addEventListener("submit", async (e) => {
     e.preventDefault(); // stop page refresh
