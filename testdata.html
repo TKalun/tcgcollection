@@ -13,49 +13,33 @@
 </head>
 <body>
   <h1>TCGdex SDK Test</h1>
-  <input type="text" id="cardQuery" placeholder="Enter card name or ID (e.g. Furret or swsh3-136)" />
+  <input type="text" id="cardQuery" placeholder="Enter card name (e.g. Furret)" />
   <button id="searchBtn">Search</button>
   <div id="results"></div>
 
   <script type="module">
-    import { TCGdex, Query } from "https://cdn.skypack.dev/@tcgdex/sdk";
+    // Use a CDN that supports CORS
+    import { TCGdex, Query } from "https://esm.sh/@tcgdex/sdk?target=es2020";
 
     const tcgdex = new TCGdex("en");
     const resultsDiv = document.getElementById("results");
 
     document.getElementById("searchBtn").addEventListener("click", async () => {
-      const queryVal = document.getElementById("cardQuery").value.trim();
+      const name = document.getElementById("cardQuery").value.trim();
       resultsDiv.innerHTML = "<p>Searching...</p>";
 
       try {
-        let results = [];
+        // Simple exact name search
+        const cards = await tcgdex.card.list(new Query().equal("name", name));
 
-        // Detect ID format like swsh3-136
-        if (/^[a-z]+\d+-\d+$/i.test(queryVal)) {
-          const [setCode, number] = queryVal.split("-");
-          results = [{
-            id: queryVal,
-            name: queryVal,
-            set: { id: setCode, name: setCode.toUpperCase() },
-            number,
-            image: `https://assets.tcgdex.net/en/swsh/${setCode}/${number}/high.png`,
-            rarity: "Unknown",
-            hp: "N/A",
-            types: []
-          }];
-        } else {
-          // Name search via SDK
-          results = await tcgdex.card.list(new Query().equal("name", queryVal));
-        }
-
-        if (!results || results.length === 0) {
-          resultsDiv.innerHTML = `<p>No cards found for "${queryVal}"</p>`;
+        if (!cards.length) {
+          resultsDiv.innerHTML = `<p>No cards found for "${name}"</p>`;
           return;
         }
 
-        // Display results
-        resultsDiv.innerHTML = results.map(card => {
-          const imgUrl = card.image || (card.set && card.number ?
+        // Display card data safely
+        resultsDiv.innerHTML = cards.map(card => {
+          const imgUrl = card.image || (card.set && card.number ? 
             `https://assets.tcgdex.net/en/${card.set.id}/${card.number}/high.png` : "");
           return `
             <div class="card">
