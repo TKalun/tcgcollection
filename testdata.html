@@ -3,37 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <title>TCGdex SDK Test</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input { padding: 8px; width: 250px; margin-right: 8px; }
+    button { padding: 8px 12px; }
+    .card { padding: 10px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px; }
+    .card img { width: 200px; display: block; margin-bottom: 10px; }
+  </style>
 </head>
 <body>
   <h1>TCGdex SDK Test</h1>
-  <input type="text" id="cardName" placeholder="Enter card name" />
+  <input type="text" id="cardQuery" placeholder="Enter card name or ID (e.g. Furret or swsh3-136)" />
   <button id="searchBtn">Search</button>
-  <pre id="output"></pre>
+  <div id="results"></div>
 
   <script type="module">
     import { TCGdex, Query } from "https://cdn.skypack.dev/@tcgdex/sdk";
 
     const tcgdex = new TCGdex("en");
-    const output = document.getElementById("output");
+    const resultsDiv = document.getElementById("results");
 
     document.getElementById("searchBtn").addEventListener("click", async () => {
-      const name = document.getElementById("cardName").value.trim();
-      output.textContent = "Searching...";
+      const queryVal = document.getElementById("cardQuery").value.trim();
+      resultsDiv.innerHTML = "<p>Searching...</p>";
 
       try {
-        // Simple search using SDK
-        const cards = await tcgdex.card.list(new Query().equal("name", name));
+        let results = [];
 
-        if (!cards.length) {
-          output.textContent = `No cards found for "${name}"`;
+        // Detect ID format like swsh3-136
+        if (/^[a-z]+\d+-\d+$/i.test(queryVal)) {
+          const [setCode, number] = queryVal.split("-");
+          results = [{
+            id: queryVal,
+            name: queryVal,
+            set: { id: setCode, name: setCode.toUpperCase() },
+            number,
+            image: `https://assets.tcgdex.net/en/swsh/${setCode}/${number}/high.png`,
+            rarity: "Unknown",
+            hp: "N/A",
+            types: []
+          }];
+        } else {
+          // Name search via SDK
+          results = await tcgdex.card.list(new Query().equal("name", queryVal));
+        }
+
+        if (!results || results.length === 0) {
+          resultsDiv.innerHTML = `<p>No cards found for "${queryVal}"</p>`;
           return;
         }
 
-        // Display results as JSON
-        output.textContent = JSON.stringify(cards, null, 2);
+        // Display results
+        resultsDiv.innerHTML = results.map(card => {
+          const imgUrl = card.image || (card.set && card.number ?
+            `https://assets.tcgdex.net/en/${card.set.id}/${card.number}/high.png` : "");
+          return `
+            <div class="card">
+              ${imgUrl ? `<img src="${imgUrl}" alt="${card.name || "Unknown"}" />` : ""}
+              <h3>${card.name || "Unknown Name"}</h3>
+              <p><strong>Set:</strong> ${card.set?.name || "Unknown"}</p>
+              <p><strong>ID:</strong> ${card.id || card.number || "N/A"}</p>
+              <p><strong>Rarity:</strong> ${card.rarity || "N/A"}</p>
+              <p><strong>HP:</strong> ${card.hp || "N/A"}</p>
+              <p><strong>Types:</strong> ${(card.types && card.types.length ? card.types.join(", ") : "N/A")}</p>
+            </div>
+          `;
+        }).join("");
 
       } catch (err) {
-        output.textContent = `Error: ${err.message}`;
+        console.error(err);
+        resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
       }
     });
   </script>
