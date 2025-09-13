@@ -57,7 +57,7 @@ document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
     if (!setCode || !number) throw new Error("Invalid card ID format. Use format like swsh3-136.");
 
     // Build API endpoint for card data
-    const apiUrl = `https://api.tcgdex.net/v2/en/${setCode}/${number}`;
+    const apiUrl = `https://api.tcgdex.net/v2/en/${setCode}/${setCode}${number}`;
     const imgUrl = `https://assets.tcgdex.net/en/swsh/${setCode}/${number}/high.png`;
 
     // Fetch JSON card data from TCGdex API
