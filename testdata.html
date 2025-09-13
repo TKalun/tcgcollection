@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TCGdex SDK Test</title>
+</head>
+<body>
+  <h1>TCGdex SDK Test</h1>
+  <input type="text" id="cardName" placeholder="Enter card name" />
+  <button id="searchBtn">Search</button>
+  <pre id="output"></pre>
+
+  <script type="module">
+    import { TCGdex, Query } from "https://cdn.skypack.dev/@tcgdex/sdk";
+
+    const tcgdex = new TCGdex("en");
+    const output = document.getElementById("output");
+
+    document.getElementById("searchBtn").addEventListener("click", async () => {
+      const name = document.getElementById("cardName").value.trim();
+      output.textContent = "Searching...";
+
+      try {
+        // Simple search using SDK
+        const cards = await tcgdex.card.list(new Query().equal("name", name));
+
+        if (!cards.length) {
+          output.textContent = `No cards found for "${name}"`;
+          return;
+        }
+
+        // Display results as JSON
+        output.textContent = JSON.stringify(cards, null, 2);
+
+      } catch (err) {
+        output.textContent = `Error: ${err.message}`;
+      }
+    });
+  </script>
+</body>
+</html>
