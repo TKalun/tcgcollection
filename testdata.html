@@ -33,23 +33,54 @@
       console.log("Search query:", queryVal);
 
       try {
-    
-        // Detect ID format like swsh3-136
-        const card = await tcgdex.card.get(queryVal);
+  let results = [];
+  let card = null;
 
-        } catch {
-          console.log("Detected card name search");
-          results = await tcgdex.card.list(new Query().equal("name", queryVal));
-          console.log("SDK response:", results);
-        }
+  // Try fetching by exact ID first
+  try {
+    card = await tcgdex.card.get(queryVal);
+    if (card) {
+      results.push(card);
+    }
+  } catch (err) {
+    console.log("Not an exact ID, trying name search...");
+  }
 
-        if (!results || results.length === 0) {
-          resultsDiv.innerHTML = `<p>No cards found for "${queryVal}"</p>`;
-          return;
-        }
+  // If no card found by ID, search by name
+  if (results.length === 0) {
+    results = await tcgdex.card.list(new Query().equal("name", queryVal));
+    console.log("SDK response:", results);
+  }
 
-        // Render each card
-        const highQualityPng = card.getImageURL('high', 'png');
+  // No results at all
+  if (!results || results.length === 0) {
+    resultsDiv.innerHTML = `<p>No cards found for "${queryVal}"</p>`;
+    return;
+  }
+
+  // Render each card
+  resultsDiv.innerHTML = results
+    .map(c => {
+      const imgUrl = c.getImageURL ? c.getImageURL("high", "png") : "";
+      return `
+        <div class="card">
+          ${imgUrl ? `<img src="${imgUrl}" alt="${c.name || "Unknown"}" />` : ""}
+          <h3>${c.name || "Unknown Name"}</h3>
+          <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
+          <p><strong>ID:</strong> ${c.id || c.number || "N/A"}</p>
+          <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
+          <p><strong>HP:</strong> ${c.hp || "N/A"}</p>
+          <p><strong>Types:</strong> ${(c.types && c.types.length ? c.types.join(", ") : "N/A")}</p>
+        </div>
+      `;
+    })
+    .join("");
+
+} catch (err) {
+  console.error("Error fetching cards:", err);
+  resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+}
+
 
       
     });
