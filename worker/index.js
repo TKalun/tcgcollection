@@ -50,7 +50,7 @@ export default {
       }
 
       const q = url.searchParams.get("q") || "";
-      const table = "tcgcollection-db"; // change to your D1 table name
+      const table = "users"; // change to your D1 table name
 
       try {
         // Check if table exists
