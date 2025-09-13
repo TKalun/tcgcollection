@@ -18,10 +18,12 @@
   <div id="results"></div>
 
   <script type="module">
-    import { TCGdex, Query } from "https://esm.sh/@tcgdex/sdk?target=es2020";
+    // ✅ Import from unpkg so browser supports named exports
+    import * as TCGdexSDK from "https://unpkg.com/@tcgdex/sdk?module";
+    const { TCGdex, Query } = TCGdexSDK;
 
     const tcgdex = new TCGdex("en");
-    console.log("TCGdex SDK loaded:", tcgdex); // Confirm SDK is loaded
+    console.log("TCGdex SDK loaded:", tcgdex);
 
     const resultsDiv = document.getElementById("results");
 
