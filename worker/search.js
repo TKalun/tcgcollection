@@ -3,13 +3,13 @@
 const API_BASE = "https://cf-pages-worker-d1-app.thomasklai88.workers.dev";
 const token = localStorage.getItem("token");
 
-// Redirect to login if no token
+// Redirect if not logged in
 if (!token) {
   alert("You must log in first!");
   window.location.href = "index.html";
 }
 
-// Helper: Convert object to HTML list recursively
+// Helper: Render object as HTML list
 function renderObject(obj) {
   if (!obj || typeof obj !== 'object') return obj || '';
   return `<ul>` + Object.entries(obj).map(([k, v]) => {
@@ -19,9 +19,7 @@ function renderObject(obj) {
   }).join('') + `</ul>`;
 }
 
-// --------------------------
 // Local DB search
-// --------------------------
 document.getElementById("searchForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const query = document.getElementById("searchQuery").value.trim();
@@ -33,19 +31,15 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
       headers: { "Authorization": `Bearer ${token}` }
     });
     const data = await res.json();
-    if (data.results?.length) {
-      resultsDiv.innerHTML = data.results.map(item => `<div class="item">${renderObject(item)}</div>`).join("");
-    } else {
-      resultsDiv.innerHTML = "<p>No results found in local DB</p>";
-    }
+    resultsDiv.innerHTML = data.results?.length
+      ? data.results.map(item => `<div class="item">${renderObject(item)}</div>`).join("")
+      : "<p>No results found in local DB</p>";
   } catch (err) {
     resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
   }
 });
 
-// --------------------------
 // TCGdex search by ID with dynamic image
-// --------------------------
 document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const cardId = document.getElementById("tcgIdQuery").value.trim();
@@ -57,7 +51,6 @@ document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
     const data = await res.json();
     const cardData = data.data || data;
 
-    // Build image URL dynamically using set code and card number
     let imageHtml = '';
     if (cardData.set?.code && cardData.number) {
       const imgUrl = `https://assets.tcgdex.net/en/${cardData.set.code}/${cardData.set.code}/${cardData.number}/high.png`;

@@ -1,6 +1,5 @@
 // index.js
 
-// DOM elements
 const loginForm = document.getElementById("loginForm");
 const usernameInput = document.getElementById("username");
 const passwordInput = document.getElementById("password");
@@ -8,15 +7,13 @@ const errorDiv = document.getElementById("error");
 
 const API_BASE = "https://cf-pages-worker-d1-app.thomasklai88.workers.dev";
 
-// Redirect to search page if already logged in
+// Redirect to search.html if already logged in
 if (localStorage.getItem("token")) {
   window.location.href = "search.html";
 }
 
-// Login form submit
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-
   const username = usernameInput.value.trim();
   const password = passwordInput.value.trim();
 
@@ -37,13 +34,9 @@ loginForm.addEventListener("submit", async (e) => {
     if (!res.ok) throw new Error("Login failed. Check your credentials.");
 
     const data = await res.json();
-
     if (!data.token) throw new Error("No token returned from server.");
 
-    // Store token
     localStorage.setItem("token", data.token);
-
-    // Redirect to search page
     window.location.href = "search.html";
 
   } catch (err) {
