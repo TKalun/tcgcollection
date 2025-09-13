@@ -5,17 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Search</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; }
     input { padding: 8px; width: 250px; margin-right: 8px; }
-    button { padding: 8px 12px; margin-top: 5px; }
+    button { padding: 8px 12px; margin-top: 5px; cursor: pointer; }
     #results, #cardResult { margin-top: 20px; }
     .item, .tcg-card { padding: 10px; border-bottom: 1px solid #ccc; margin-bottom: 10px; }
     .field { margin-left: 10px; }
     .card-image { max-width: 250px; display: block; margin-bottom: 10px; }
+    #logoutBtn { float: right; margin-top: -50px; }
   </style>
 </head>
 <body>
   <h1>Search Database & TCGdex</h1>
+  <button id="logoutBtn">Logout</button>
 
   <!-- Local DB search -->
   <form id="searchForm">
@@ -24,7 +26,7 @@
   </form>
   <div id="results"></div>
 
-  <!-- TCGdex search by ID -->
+  <!-- TCGdex card ID search -->
   <h2>Search TCGdex by Card ID</h2>
   <form id="tcgIdForm">
     <input type="text" id="tcgIdQuery" placeholder="Enter TCGdex card ID (e.g., swsh3-136)" required />
@@ -33,5 +35,12 @@
   <div id="cardResult"></div>
 
   <script src="search.js"></script>
+  <script>
+    // Logout button logic
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("token");
+      window.location.href = "index.html";
+    });
+  </script>
 </body>
 </html>
