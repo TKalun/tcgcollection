@@ -50,12 +50,13 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
     resultsDiv.innerHTML = `<p style="color:red;">Error fetching local DB: ${err.message}</p>`;
   }
 });
+
 document.addEventListener("DOMContentLoaded", () => {
   // ------------------------
   // TCGdex card search
   // ------------------------
-  const searchBtn = document.getElementById("searchBtn");
-  const cardQueryInput = document.getElementById("cardQuery");
+  const searchBtn = document.getElementById("tcgIdForm");
+  const cardQueryInput = document.getElementById("tcgIdQuery");
 
   searchBtn?.addEventListener("click", async () => {
     if (!cardQueryInput || !resultsDiv) return;
