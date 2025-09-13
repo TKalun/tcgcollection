@@ -11,6 +11,7 @@
     #results, #cardResult { margin-top: 20px; }
     .item, .tcg-card { padding: 10px; border-bottom: 1px solid #ccc; margin-bottom: 10px; }
     .field { margin-left: 10px; }
+    .card-image { max-width: 250px; display: block; margin-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -23,9 +24,12 @@
   </form>
   <div id="results"></div>
 
-  <!-- Specific card test -->
-  <h2>Specific Card Test (swsh3-136)</h2>
-  <button id="getCardBtn">Get Test Card</button>
+  <!-- TCGdex search by ID -->
+  <h2>Search TCGdex by Card ID</h2>
+  <form id="tcgIdForm">
+    <input type="text" id="tcgIdQuery" placeholder="Enter TCGdex card ID (e.g., swsh3-136)" required />
+    <button type="submit">Search by ID</button>
+  </form>
   <div id="cardResult"></div>
 
   <script>
@@ -72,19 +76,27 @@
     });
 
     // --------------------------
-    // Specific card test (swsh3-136)
+    // TCGdex search by ID
     // --------------------------
-    document.getElementById("getCardBtn").addEventListener("click", async () => {
+    document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const cardId = document.getElementById("tcgIdQuery").value;
       const cardDiv = document.getElementById("cardResult");
       cardDiv.innerHTML = "<p>Loading card...</p>";
 
       try {
-        const res = await fetch(`${API_BASE}/api/tcgdex/card/swsh3-136`);
+        const res = await fetch(`${API_BASE}/api/tcgdex/card/${encodeURIComponent(cardId)}`);
         const data = await res.json();
-        console.log(data); // debug
 
         const cardData = data.data || data;
-        cardDiv.innerHTML = `<div class="tcg-card">${renderObject(cardData)}</div>`;
+
+        // Show card image if available
+        let imageHtml = '';
+        if (cardData.image) {
+          imageHtml = `<img class="card-image" src="${cardData.image}" alt="${cardData.name || cardId}" />`;
+        }
+
+        cardDiv.innerHTML = imageHtml + `<div class="tcg-card">${renderObject(cardData)}</div>`;
       } catch (err) {
         cardDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
       }
