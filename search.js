@@ -6,7 +6,7 @@ if (!token) {
   window.location.href = "index.html";
 }
 
-// Helper to render objects as HTML
+// Helper: Convert object to HTML list recursively
 function renderObject(obj) {
   if (!obj || typeof obj !== 'object') return obj || '';
   return `<ul>` + Object.entries(obj).map(([k, v]) => {
@@ -17,7 +17,7 @@ function renderObject(obj) {
 }
 
 // ------------------------
-// Local DB search
+// Local DB search (D1)
 // ------------------------
 document.getElementById("searchForm").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -43,7 +43,7 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
 });
 
 // ------------------------
-// TCGdex card ID search
+// TCGdex card ID search (direct asset)
 // ------------------------
 document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -52,27 +52,27 @@ document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
   cardDiv.innerHTML = "<p>Loading card...</p>";
 
   try {
-    // Use the TCGdex public API directly
-    const res = await fetch(`https://api.tcgdex.net/cards/${encodeURIComponent(cardId)}`);
+    // Example format: "swsh3-136"
+    const [setCode, number] = cardId.split("-");
+    if (!setCode || !number) throw new Error("Invalid card ID format. Use format like swsh3-136.");
 
-    if (!res.ok) throw new Error(`Server returned ${res.status}`);
+    // Construct the direct asset URL
+    const imgUrl = `https://assets.tcgdex.net/en/swsh/${setCode}/${number}/high.png`;
 
-    const data = await res.json();
-    const cardData = data.data || data;
-
-    let imageHtml = '';
-    if (cardData.set?.code && cardData.number) {
-      const imgUrl = `https://assets.tcgdex.net/en/${cardData.set.code}/${cardData.set.code}/${cardData.number}/high.png`;
-      imageHtml = `<img class="card-image" src="${imgUrl}" alt="${cardData.name || cardId}" />`;
-    }
-
-    cardDiv.innerHTML = imageHtml + `<div class="tcg-card">${renderObject(cardData)}</div>`;
-
+    // Display card image and ID
+    cardDiv.innerHTML = `
+      <img class="card-image" src="${imgUrl}" alt="${cardId}" />
+      <p>Card ID: ${cardId}</p>
+    `;
   } catch (err) {
-    if (err.message.includes("Failed to fetch")) {
-      cardDiv.innerHTML = `<p style="color:red;">Network or CORS error: Unable to fetch card from TCGdex API.</p>`;
-    } else {
-      cardDiv.innerHTML = `<p style="color:red;">Error fetching card: ${err.message}</p>`;
-    }
+    cardDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
   }
+});
+
+// ------------------------
+// Logout button
+// ------------------------
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  localStorage.removeItem("token");
+  window.location.href = "index.html";
 });
