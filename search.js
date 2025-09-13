@@ -19,7 +19,6 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
     const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
       headers: { "Authorization": "Bearer " + (localStorage.getItem("token") || "") }
     });
-
     if (!res.ok) throw new Error(`DB error: ${res.status}`);
     const data = await res.json();
 
@@ -30,8 +29,8 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
 
     resultsDiv.innerHTML = data.results.map(r => `
       <div class="card">
-        <p><strong>${r.name}</strong></p>
-        <p>ID: ${r.id}</p>
+        <p><strong>${r.name || "No Name"}</strong></p>
+        <p>ID: ${r.id || "N/A"}</p>
       </div>
     `).join("");
   } catch (err) {
@@ -40,7 +39,7 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
 });
 
 // ------------------------
-// TCGdex search (by Name or ID)
+// TCGdex card search (by Name or ID)
 // ------------------------
 document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -53,16 +52,16 @@ document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
 
     // Detect ID format like swsh3-136
     if (/^[a-z]+\d+-\d+$/i.test(queryVal)) {
-      // Split into set + number
       const [setCode, number] = queryVal.split("-");
-      const imgUrl = `https://assets.tcgdex.net/en/swsh/${setCode}/${number}/high.png`;
-
       results = [{
         id: queryVal,
         name: queryVal,
         set: { id: setCode, name: setCode.toUpperCase() },
         number,
-        image: imgUrl
+        image: `https://assets.tcgdex.net/en/swsh/${setCode}/${number}/high.png`,
+        rarity: "Unknown",
+        hp: "N/A",
+        types: []
       }];
     } else {
       // Name search with SDK
@@ -76,20 +75,23 @@ document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
 
     // Render results
     cardDiv.innerHTML = results.map(card => {
-      const imgUrl = card.image || `https://assets.tcgdex.net/en/${card.set.id}/${card.number}/high.png`;
+      const imgUrl = card.image || (card.set && card.number ? 
+        `https://assets.tcgdex.net/en/${card.set.id}/${card.number}/high.png` : "");
       return `
         <div class="card">
-          <img src="${imgUrl}" alt="${card.name}" />
-          <h3>${card.name}</h3>
+          ${imgUrl ? `<img src="${imgUrl}" alt="${card.name}" />` : ""}
+          <h3>${card.name || "Unknown Name"}</h3>
           <p><strong>Set:</strong> ${card.set?.name || "Unknown"}</p>
-          <p><strong>ID:</strong> ${card.id || card.number}</p>
+          <p><strong>ID:</strong> ${card.id || card.number || "N/A"}</p>
           <p><strong>Rarity:</strong> ${card.rarity || "N/A"}</p>
           <p><strong>HP:</strong> ${card.hp || "N/A"}</p>
-          <p><strong>Types:</strong> ${(card.types || []).join(", ")}</p>
+          <p><strong>Types:</strong> ${(card.types && card.types.length ? card.types.join(", ") : "N/A")}</p>
         </div>
       `;
     }).join("");
+
   } catch (err) {
+    console.error(err);
     cardDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
   }
 });
