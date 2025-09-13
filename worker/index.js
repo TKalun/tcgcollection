@@ -1,51 +1,64 @@
-// index.js
+export default {
+  async fetch(req, env) {
+    const url = new URL(req.url);
+    const path = url.pathname;
+    const method = req.method;
 
-const loginForm = document.getElementById("loginForm");
-const usernameInput = document.getElementById("username");
-const passwordInput = document.getElementById("password");
-const errorDiv = document.getElementById("error");
+    // Login
+    if (path === "/api/login" && method === "POST") {
+      try {
+        const { username, password } = await req.json();
+        if (!username || !password) {
+          return new Response(JSON.stringify({ error: "Missing username or password" }), { status: 400 });
+        }
+        const token = btoa(`${username}:${Date.now()}`);
+        return new Response(JSON.stringify({ token }), { headers: { "Content-Type": "application/json" } });
+      } catch (err) {
+        return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+      }
+    }
 
-const API_BASE = "https://cf-pages-worker-d1-app.thomasklai88.workers.dev";
+    // Local DB search
+    if (path === "/api/search" && method === "GET") {
+      const token = req.headers.get("Authorization")?.replace("Bearer ", "");
+      if (!token) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
 
-// Redirect to search.html if already logged in
-if (localStorage.getItem("token")) {
-  window.location.href = "search.html";
-}
+      const q = url.searchParams.get("q") || "";
+      try {
+        const stmt = await env.DB.prepare("SELECT * FROM cards WHERE name LIKE ?")
+                                   .bind(`%${q}%`)
+                                   .all();
+        return new Response(JSON.stringify({ results: stmt.results }), { headers: { "Content-Type": "application/json" } });
+      } catch (err) {
+        return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+      }
+    }
 
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const username = usernameInput.value.trim();
-  const password = passwordInput.value.trim();
+    // TCGdex search by name
+    if (path === "/api/tcgdex" && method === "GET") {
+      const q = url.searchParams.get("q") || "";
+      try {
+        const apiRes = await fetch(`https://api.tcgdex.net/cards?q=${encodeURIComponent(q)}`);
+        const data = await apiRes.json();
+        return new Response(JSON.stringify({ data: data.data || [] }), { headers: { "Content-Type": "application/json" } });
+      } catch (err) {
+        return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+      }
+    }
 
-  if (!username || !password) {
-    errorDiv.textContent = "Please enter username and password.";
-    return;
+    // TCGdex card by ID
+    const cardIdMatch = path.match(/^\/api\/tcgdex\/card\/(.+)$/);
+    if (cardIdMatch && method === "GET") {
+      const cardId = cardIdMatch[1];
+      try {
+        const apiRes = await fetch(`https://api.tcgdex.net/cards/${encodeURIComponent(cardId)}`);
+        const data = await apiRes.json();
+        return new Response(JSON.stringify({ data: data }), { headers: { "Content-Type": "application/json" } });
+      } catch (err) {
+        return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+      }
+    }
+
+    return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
   }
-
-  errorDiv.textContent = "Logging in...";
-
-  try {
-    const res = await fetch(`${API_BASE}/api/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password })
-    });
-
-    if (!res.ok) throw new Error("Login failed. Check your credentials.");
-
-    const data = await res.json();
-    if (!data.token) throw new Error("No token returned from server.");
-
-    localStorage.setItem("token", data.token);
-    window.location.href = "search.html";
-
-  } catch (err) {
-    errorDiv.textContent = `Error: ${err.message}`;
-  }
-});
-
-// Optional logout function
-function logout() {
-  localStorage.removeItem("token");
-  window.location.href = "index.html";
-}
+};
