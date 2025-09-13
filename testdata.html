@@ -19,11 +19,10 @@
 
   <script type="module">
     // ✅ Import from unpkg so browser supports named exports
-    import TCGdexSDK from "https://unpkg.com/@tcgdex/sdk?module";
-    console.log(TCGdexSDK);
-    const { TCGdex, Query } = TCGdexSDK;
-
+    const TCGdexSDK = await import("https://unpkg.com/@tcgdex/sdk?module");
+    const { TCGdex, Query } = TCGdexSDK.default || TCGdexSDK;
     const tcgdex = new TCGdex("en");
+    
     console.log("TCGdex SDK loaded:", tcgdex);
 
     const resultsDiv = document.getElementById("results");
