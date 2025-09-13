@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchBtn = document.getElementById("tcgIdForm");
   const cardQueryInput = document.getElementById("tcgIdQuery");
 
-  searchBtn?.addEventListener("click", async () => {
+  searchBtn?.addEventListener("submit", async () => {
     if (!cardQueryInput || !resultsDiv) return;
     const queryVal = cardQueryInput.value.trim();
     resultsDiv.innerHTML = "<p>Searching...</p>";
