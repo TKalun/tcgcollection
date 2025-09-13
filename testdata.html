@@ -2,45 +2,71 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>TCGdex SDK Test</title>
+  <title>TCGdex SDK Test - Debug</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
-    input { padding: 8px; width: 250px; margin-right: 8px; }
+    input { padding: 8px; width: 300px; margin-right: 8px; }
     button { padding: 8px 12px; }
     .card { padding: 10px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px; }
     .card img { width: 200px; display: block; margin-bottom: 10px; }
   </style>
 </head>
 <body>
-  <h1>TCGdex SDK Test</h1>
-  <input type="text" id="cardQuery" placeholder="Enter card name (e.g. Furret)" />
+  <h1>TCGdex SDK Test - Debug</h1>
+  <input type="text" id="cardQuery" placeholder="Enter card name or ID (e.g. Furret or swsh3-136)" />
   <button id="searchBtn">Search</button>
   <div id="results"></div>
 
   <script type="module">
-    // Use a CDN that supports CORS
     import { TCGdex, Query } from "https://esm.sh/@tcgdex/sdk?target=es2020";
 
     const tcgdex = new TCGdex("en");
+    console.log("TCGdex SDK loaded:", tcgdex); // Confirm SDK is loaded
+
     const resultsDiv = document.getElementById("results");
 
     document.getElementById("searchBtn").addEventListener("click", async () => {
-      const name = document.getElementById("cardQuery").value.trim();
+      const queryVal = document.getElementById("cardQuery").value.trim();
       resultsDiv.innerHTML = "<p>Searching...</p>";
+      console.log("Search query:", queryVal);
 
       try {
-        // Simple exact name search
-        const cards = await tcgdex.card.list(new Query().equal("name", name));
+        let results = [];
 
-        if (!cards.length) {
-          resultsDiv.innerHTML = `<p>No cards found for "${name}"</p>`;
+        // Detect ID format like swsh3-136
+        if (/^[a-z]+\d+-\d+$/i.test(queryVal)) {
+          const [setCode, number] = queryVal.split("-");
+          console.log("Detected card ID format:", setCode, number);
+
+          results = [{
+            id: queryVal,
+            name: queryVal,
+            set: { id: setCode, name: setCode.toUpperCase() },
+            number,
+            image: `https://assets.tcgdex.net/en/swsh/${setCode}/${number}/high.png`,
+            rarity: "Unknown",
+            hp: "N/A",
+            types: []
+          }];
+
+        } else {
+          console.log("Detected card name search");
+          results = await tcgdex.card.list(new Query().equal("name", queryVal));
+          console.log("SDK response:", results);
+        }
+
+        if (!results || results.length === 0) {
+          resultsDiv.innerHTML = `<p>No cards found for "${queryVal}"</p>`;
           return;
         }
 
-        // Display card data safely
-        resultsDiv.innerHTML = cards.map(card => {
-          const imgUrl = card.image || (card.set && card.number ? 
+        // Render each card
+        resultsDiv.innerHTML = results.map(card => {
+          console.log("Rendering card:", card);
+
+          const imgUrl = card.image || (card.set && card.number ?
             `https://assets.tcgdex.net/en/${card.set.id}/${card.number}/high.png` : "");
+
           return `
             <div class="card">
               ${imgUrl ? `<img src="${imgUrl}" alt="${card.name || "Unknown"}" />` : ""}
@@ -55,7 +81,7 @@
         }).join("");
 
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching cards:", err);
         resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
       }
     });
