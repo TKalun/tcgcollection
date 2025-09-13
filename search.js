@@ -8,41 +8,36 @@ console.log("TCGdex SDK loaded:", tcgdex);
 
 document.addEventListener("DOMContentLoaded", () => {
   // ------------------------
-  // Local DB search
-  // ------------------------
-  const searchForm = document.getElementById("searchForm");
-  const searchQueryInput = document.getElementById("searchQuery");
+// Local DB search
+// ------------------------
+document.getElementById("searchForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const q = document.getElementById("searchQuery").value.trim();
   const resultsDiv = document.getElementById("results");
-  
-  searchForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!searchQueryInput || !resultsDiv) return;
+  resultsDiv.innerHTML = "<p>Searching local DB...</p>";
 
-    const q = searchQueryInput.value.trim();
-    resultsDiv.innerHTML = "<p>Searching local DB...</p>";
+  try {
+    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
+      headers: { "Authorization": "Bearer " + (localStorage.getItem("token") || "") }
+    });
+    if (!res.ok) throw new Error(`DB error: ${res.status}`);
+    const data = await res.json();
 
-    try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
-        headers: { "Authorization": "Bearer " + (localStorage.getItem("token") || "") }
-      });
-      if (!res.ok) throw new Error(`DB error: ${res.status}`);
-      const data = await res.json();
-
-      if (!data.results || !data.results.length) {
-        resultsDiv.innerHTML = `<p>No results found in local DB for "${q}".</p>`;
-        return;
-      }
-
-      resultsDiv.innerHTML = data.results.map(r => `
-        <div class="card">
-          <p><strong>${r.name || "No Name"}</strong></p>
-          <p>ID: ${r.id || "N/A"}</p>
-        </div>
-      `).join("");
-    } catch (err) {
-      resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+    if (!data.results || !data.results.length) {
+      resultsDiv.innerHTML = `<p>No results found in local DB for "${q}".</p>`;
+      return;
     }
-  });
+
+    resultsDiv.innerHTML = data.results.map(r => `
+      <div class="card">
+        <p><strong>${r.name || "No Name"}</strong></p>
+        <p>ID: ${r.id || "N/A"}</p>
+      </div>
+    `).join("");
+  } catch (err) {
+    resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+  }
+});
 
   // ------------------------
   // TCGdex card search
