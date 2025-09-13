@@ -32,75 +32,7 @@
   </form>
   <div id="cardResult"></div>
 
-  <script>
-    const API_BASE = "https://cf-pages-worker-d1-app.thomasklai88.workers.dev";
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      alert("You must log in first!");
-      window.location.href = "index.html";
-    }
-
-    // Helper: Convert object to HTML list recursively
-    function renderObject(obj) {
-      if (!obj || typeof obj !== 'object') return obj || '';
-      return `<ul>` + Object.entries(obj).map(([k, v]) => {
-        if (Array.isArray(v)) v = v.map(i => renderObject(i)).join('');
-        else if (typeof v === "object") v = renderObject(v);
-        return `<li><strong>${k}:</strong> <span class="field">${v}</span></li>`;
-      }).join('') + `</ul>`;
-    }
-
-    // --------------------------
-    // Local DB search
-    // --------------------------
-    document.getElementById("searchForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const query = document.getElementById("searchQuery").value;
-      const resultsDiv = document.getElementById("results");
-      resultsDiv.innerHTML = "<p>Searching local database...</p>";
-
-      try {
-        const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}`, {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (data.results?.length) {
-          resultsDiv.innerHTML = data.results.map(item => `<div class="item">${renderObject(item)}</div>`).join("");
-        } else {
-          resultsDiv.innerHTML = "<p>No results found in local DB</p>";
-        }
-      } catch (err) {
-        resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
-      }
-    });
-
-    // --------------------------
-    // TCGdex search by ID with dynamic image URL
-    // --------------------------
-    document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const cardId = document.getElementById("tcgIdQuery").value.trim();
-      const cardDiv = document.getElementById("cardResult");
-      cardDiv.innerHTML = "<p>Loading card...</p>";
-
-      try {
-        const res = await fetch(`${API_BASE}/api/tcgdex/card/${encodeURIComponent(cardId)}`);
-        const data = await res.json();
-        const cardData = data.data || data;
-
-        // Build image URL dynamically using set code and card number
-        let imageHtml = '';
-        if (cardData.set?.code && cardData.number) {
-          const imgUrl = `https://assets.tcgdex.net/en/${cardData.set.code}/${cardData.set.code}/${cardData.number}/high.png`;
-          imageHtml = `<img class="card-image" src="${imgUrl}" alt="${cardData.name || cardId}" />`;
-        }
-
-        cardDiv.innerHTML = imageHtml + `<div class="tcg-card">${renderObject(cardData)}</div>`;
-      } catch (err) {
-        cardDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
-      }
-    });
-  </script>
+  <!-- Include external JS -->
+  <script src="search.js"></script>
 </body>
 </html>

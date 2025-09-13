@@ -1,140 +1,58 @@
-import * as jose from "jose"; // JWT library
+// index.js
 
-function withCors(response) {
-  return new Response(response.body, {
-    ...response,
-    headers: {
-      ...Object.fromEntries(response.headers),
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization"
-    }
-  });
+// DOM elements
+const loginForm = document.getElementById("loginForm");
+const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
+const errorDiv = document.getElementById("error");
+
+const API_BASE = "https://cf-pages-worker-d1-app.thomasklai88.workers.dev";
+
+// Redirect to search page if already logged in
+if (localStorage.getItem("token")) {
+  window.location.href = "search.html";
 }
 
-const JWT_SECRET = new TextEncoder().encode("MFP4x1ee9Kqx1FVpVct9nEFz+j12JZrvz5MmJBQRbms=");
+// Login form submit
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value.trim();
 
-    if (request.method === "OPTIONS") {
-      return new Response(null, {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization"
-        }
-      });
-    }
-
-    // ------------------------
-    // Register
-    // ------------------------
-    if (url.pathname === "/api/register" && request.method === "POST") {
-      try {
-        const { username, password } = await request.json();
-        if (!username || !password)
-          return withCors(new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 }));
-
-        const pwBuffer = new TextEncoder().encode(password);
-        const hashedBuffer = await crypto.subtle.digest("SHA-256", pwBuffer);
-        const hashedPassword = btoa(String.fromCharCode(...new Uint8Array(hashedBuffer)));
-
-        await env.DB.prepare(
-          "INSERT INTO users (username, password) VALUES (?, ?)"
-        ).bind(username, hashedPassword).run();
-
-        return withCors(new Response(JSON.stringify({ success: true }), { status: 200 }));
-      } catch (err) {
-        return withCors(new Response(JSON.stringify({ error: err.message }), { status: 500 }));
-      }
-    }
-
-    // ------------------------
-    // Login
-    // ------------------------
-    if (url.pathname === "/api/login" && request.method === "POST") {
-      try {
-        const { username, password } = await request.json();
-
-        const user = await env.DB.prepare(
-          "SELECT * FROM users WHERE username = ?"
-        ).bind(username).first();
-
-        if (!user) return withCors(new Response(JSON.stringify({ error: "User not found" }), { status: 404 }));
-
-        const pwBuffer = new TextEncoder().encode(password);
-        const hashedBuffer = await crypto.subtle.digest("SHA-256", pwBuffer);
-        const hashedPassword = btoa(String.fromCharCode(...new Uint8Array(hashedBuffer)));
-
-        if (hashedPassword !== user.password) return withCors(new Response(JSON.stringify({ error: "Invalid password" }), { status: 401 }));
-
-        const token = await new jose.SignJWT({ username })
-          .setProtectedHeader({ alg: "HS256", typ: "JWT" })
-          .setExpirationTime("1h")
-          .sign(JWT_SECRET);
-
-        return withCors(new Response(JSON.stringify({ success: true, token }), { status: 200 }));
-      } catch (err) {
-        return withCors(new Response(JSON.stringify({ error: err.message }), { status: 500 }));
-      }
-    }
-
-    // ------------------------
-    // Local DB Search (JWT-protected)
-    // ------------------------
-    if (url.pathname === "/api/search" && request.method === "GET") {
-      try {
-        const authHeader = request.headers.get("Authorization");
-        if (!authHeader) return withCors(new Response(JSON.stringify({ error: "Missing token" }), { status: 401 }));
-
-        const token = authHeader.split(" ")[1];
-        try {
-          await jose.jwtVerify(token, JWT_SECRET);
-        } catch {
-          return withCors(new Response(JSON.stringify({ error: "Invalid token" }), { status: 401 }));
-        }
-
-        const q = url.searchParams.get("q") || "";
-        const rows = await env.DB.prepare(
-          "SELECT * FROM items WHERE name LIKE ? OR description LIKE ?"
-        ).bind(`%${q}%`, `%${q}%`).all();
-
-        return withCors(new Response(JSON.stringify({ results: rows.results }), { headers: { "Content-Type": "application/json" } }));
-      } catch (err) {
-        return withCors(new Response(JSON.stringify({ error: err.message }), { status: 500 }));
-      }
-    }
-
-    // ------------------------
-    // TCGdex Search by Name (full JSON)
-    // ------------------------
-    if (url.pathname === "/api/tcgdex" && request.method === "GET") {
-      try {
-        const q = url.searchParams.get("q") || "charizard";
-        const res = await fetch(`https://api.tcgdex.net/v2/en/cards?name=${encodeURIComponent(q)}`);
-        const data = await res.json();
-        return withCors(new Response(JSON.stringify(data), { headers: { "Content-Type": "application/json" } }));
-      } catch (err) {
-        return withCors(new Response(JSON.stringify({ error: err.message }), { status: 500 }));
-      }
-    }
-
-    // ------------------------
-    // TCGdex Specific Card by ID (full JSON)
-    // ------------------------
-    if (url.pathname.startsWith("/api/tcgdex/card/") && request.method === "GET") {
-      try {
-        const cardId = url.pathname.split("/").pop();
-        const res = await fetch(`https://api.tcgdex.net/v2/en/cards/${encodeURIComponent(cardId)}`);
-        const data = await res.json();
-        return withCors(new Response(JSON.stringify(data), { headers: { "Content-Type": "application/json" } }));
-      } catch (err) {
-        return withCors(new Response(JSON.stringify({ error: err.message }), { status: 500 }));
-      }
-    }
-
-    return withCors(new Response("Not found", { status: 404 }));
+  if (!username || !password) {
+    errorDiv.textContent = "Please enter username and password.";
+    return;
   }
-};
+
+  errorDiv.textContent = "Logging in...";
+
+  try {
+    const res = await fetch(`${API_BASE}/api/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+
+    if (!res.ok) throw new Error("Login failed. Check your credentials.");
+
+    const data = await res.json();
+
+    if (!data.token) throw new Error("No token returned from server.");
+
+    // Store token
+    localStorage.setItem("token", data.token);
+
+    // Redirect to search page
+    window.location.href = "search.html";
+
+  } catch (err) {
+    errorDiv.textContent = `Error: ${err.message}`;
+  }
+});
+
+// Optional logout function
+function logout() {
+  localStorage.removeItem("token");
+  window.location.href = "index.html";
+}
