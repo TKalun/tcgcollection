@@ -76,24 +76,24 @@
     });
 
     // --------------------------
-    // TCGdex search by ID
+    // TCGdex search by ID with dynamic image URL
     // --------------------------
     document.getElementById("tcgIdForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const cardId = document.getElementById("tcgIdQuery").value;
+      const cardId = document.getElementById("tcgIdQuery").value.trim();
       const cardDiv = document.getElementById("cardResult");
       cardDiv.innerHTML = "<p>Loading card...</p>";
 
       try {
         const res = await fetch(`${API_BASE}/api/tcgdex/card/${encodeURIComponent(cardId)}`);
         const data = await res.json();
-
         const cardData = data.data || data;
 
-        // Show card image if available
+        // Build image URL dynamically using set code and card number
         let imageHtml = '';
-        if (cardData.image) {
-          imageHtml = `<img class="card-image" src="${cardData.image}" alt="${cardData.name || cardId}" />`;
+        if (cardData.set?.code && cardData.number) {
+          const imgUrl = `https://assets.tcgdex.net/en/${cardData.set.code}/${cardData.set.code}/${cardData.number}/high.png`;
+          imageHtml = `<img class="card-image" src="${imgUrl}" alt="${cardData.name || cardId}" />`;
         }
 
         cardDiv.innerHTML = imageHtml + `<div class="tcg-card">${renderObject(cardData)}</div>`;
