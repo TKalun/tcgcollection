@@ -58,7 +58,7 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
   document.addEventListener("DOMContentLoaded", () => { 
   const searchForm = document.getElementById("tcgIdForm");
   const cardQueryInput = document.getElementById("tcgIdQuery");
-  const resultsDiv = document.getElementById("results");
+  const resultsDiv = document.getElementById("cardResult");
 
   searchForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
