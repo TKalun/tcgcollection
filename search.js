@@ -51,10 +51,14 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
   }
 });
 
-document.addEventListener("DOMContentLoaded", () => {
+
+  // ------------------------
+  // TCGdex card search
+  // ------------------------
+  document.addEventListener("DOMContentLoaded", () => { 
   const searchForm = document.getElementById("tcgIdForm");
   const cardQueryInput = document.getElementById("tcgIdQuery");
-  const resultsDiv = document.getElementById("cardResult");
+  const resultsDiv = document.getElementById("results");
 
   searchForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -71,14 +75,14 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const card = await tcgdex.card.get(queryVal);
         if (card) {
-          // Wrap the single card in an array so we render it like multiple
+          // Wrap the single card in an array so it displays like multiple
           results = [card];
         }
       } catch (err) {
         console.log("Not an exact ID, trying name search...");
       }
 
-      // If no result by ID, fall back to name search (may return multiple)
+      // If no result by ID, fall back to name search (may return multiple cards)
       if (results.length === 0) {
         results = await tcgdex.card.list(new Query().equal("name", queryVal));
         console.log("SDK response:", results);
@@ -112,3 +116,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
