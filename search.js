@@ -52,15 +52,12 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  // ------------------------
-  // TCGdex card search
-  // ------------------------
   const searchForm = document.getElementById("tcgIdForm");
   const cardQueryInput = document.getElementById("tcgIdQuery");
   const resultsDiv = document.getElementById("cardResult");
 
   searchForm?.addEventListener("submit", async (e) => {
-    e.preventDefault(); // stop page refresh
+    e.preventDefault();
     if (!cardQueryInput || !resultsDiv) return;
 
     const queryVal = cardQueryInput.value.trim();
@@ -69,17 +66,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       let results = [];
-      let card = null;
 
-      // Try fetching by exact ID first
+      // Try exact ID search first
       try {
-        card = await tcgdex.card.get(queryVal);
-        if (card) results.push(card);
+        const card = await tcgdex.card.get(queryVal);
+        if (card) {
+          // Wrap the single card in an array so we render it like multiple
+          results = [card];
+        }
       } catch (err) {
         console.log("Not an exact ID, trying name search...");
       }
 
-      // If no card found by ID, search by name
+      // If no result by ID, fall back to name search (may return multiple)
       if (results.length === 0) {
         results = await tcgdex.card.list(new Query().equal("name", queryVal));
         console.log("SDK response:", results);
@@ -90,6 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // Render ALL results
       resultsDiv.innerHTML = results
         .map(c => {
           const imgUrl = c.getImageURL ? c.getImageURL("high", "png") : "";
