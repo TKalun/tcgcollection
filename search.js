@@ -55,65 +55,46 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
   // ------------------------
   // TCGdex card search
   // ------------------------
-  document.addEventListener("DOMContentLoaded", () => { 
-  const searchForm = document.getElementById("tcgIdForm");
-  const cardQueryInput = document.getElementById("tcgIdQuery");
-  const resultsDiv = document.getElementById("cardResult");
+  document.addEventListener("DOMContentLoaded", () => {
+  const tcgForm = document.getElementById("tcgIdForm");
+  const tcgQueryInput = document.getElementById("tcgIdQuery");
+  const cardResultDiv = document.getElementById("cardResult");
 
-  searchForm?.addEventListener("submit", async (e) => {
+  tcgForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (!cardQueryInput || !resultsDiv) return;
+    const query = tcgQueryInput.value.trim();
+    if (!query) return;
 
-    const queryVal = cardQueryInput.value.trim();
-    resultsDiv.innerHTML = "<p>Searching...</p>";
-    console.log("Search query:", queryVal);
+    // Clear previous results
+    cardResultDiv.innerHTML = `<p>Loading...</p>`;
 
     try {
-      let results = [];
+      // Fetch card data from TCGdex API (replace URL with your actual endpoint)
+      const res = await fetch(`https://api.tcgdex.com/cards?name=${encodeURIComponent(query)}`);
+      const data = await res.json();
 
-      // Try exact ID search first
-      try {
-        const card = await tcgdex.card.get(queryVal);
-        if (card) {
-          // Wrap the single card in an array so it displays like multiple
-          results = [card];
-        }
-      } catch (err) {
-        console.log("Not an exact ID, trying name search...");
-      }
+      // Clear loading text
+      cardResultDiv.innerHTML = "";
 
-      // If no result by ID, fall back to name search (may return multiple cards)
-      if (results.length === 0) {
-        results = await tcgdex.card.list(new Query().equal("name", queryVal));
-        console.log("SDK response:", results);
-      }
-
-      if (!results || results.length === 0) {
-        resultsDiv.innerHTML = `<p>No cards found for "${queryVal}"</p>`;
+      if (!data || data.length === 0) {
+        cardResultDiv.innerHTML = `<p>No cards found for "${query}".</p>`;
         return;
       }
 
-      // Render ALL results
-      resultsDiv.innerHTML = results
-        .map(c => {
-          const imgUrl = c.getImageURL ? c.getImageURL("high", "png") : "";
-          return `
-            <div class="card">
-              ${imgUrl ? `<img src="${imgUrl}" alt="${c.name || "Unknown"}" />` : ""}
-              <h3>${c.name || "Unknown Name"}</h3>
-              <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
-              <p><strong>ID:</strong> ${c.id || c.number || "N/A"}</p>
-              <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
-              <p><strong>HP:</strong> ${c.hp || "N/A"}</p>
-              <p><strong>Types:</strong> ${(c.types?.length ? c.types.join(", ") : "N/A")}</p>
-            </div>
-          `;
-        })
-        .join("");
+      // Create card elements
+      data.forEach(card => {
+        const cardDiv = document.createElement("div");
+        cardDiv.className = "card";
+        cardDiv.innerHTML = `
+          <img src="${card.imageUrl}" alt="${card.name}" />
+          <div class="card-info">${card.name}</div>
+        `;
+        cardResultDiv.appendChild(cardDiv);
+      });
+
     } catch (err) {
-      console.error("Error fetching cards:", err);
-      resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+      console.error(err);
+      cardResultDiv.innerHTML = `<p>Error fetching cards. Please try again.</p>`;
     }
   });
 });
-
