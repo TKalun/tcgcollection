@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
          if (!imgUrl) {
             imgUrl = "images/fallback.png";
          }
-         
+
         const tcgplayerPriceNorm = c.pricing?.tcgplayer?.normal?.marketPrice || c.pricing?.tcgplayer?.unlimited?.marketPrice || "None";
         // const tcgplayerPriceReverse = c.pricing?.tcgplayer?.reverse-holofoil?.market || "None";
         // const weakness = c.weaknesses?.[0]?.type || "None";
@@ -116,7 +116,6 @@ document.addEventListener("DOMContentLoaded", () => {
               <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
               <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
               <p><strong>TCGPlayer Price - Normal:</strong> ${tcgplayerPriceNorm}</p>
-              <p>${c.getImageURL.this.image}</p>
 
               
             </div>
