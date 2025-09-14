@@ -52,9 +52,7 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
 });
 
 
-// ------------------------
 // TCGdex card search (Grid Gallery)
-// ------------------------
 document.addEventListener("DOMContentLoaded", () => { 
   const searchForm = document.getElementById("tcgIdForm");
   const cardQueryInput = document.getElementById("tcgIdQuery");
@@ -71,18 +69,18 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       let results = [];
 
-      // Try exact ID search first
-      try {
-        const card = await tcgdex.card.get(queryVal);
-        if (card) results = [card]; // wrap single card
-      } catch (err) {
-        console.log("Not an exact ID, trying name search...");
-      }
+      // Fallback to name search first
+      results = await tcgdex.card.list(new Query().equal("name", queryVal));
+      console.log("SDK response:", results);
 
-      // Fallback to name search
-      if (results.length === 0) {
-        results = await tcgdex.card.list(new Query().equal("name", queryVal));
-        console.log("SDK response:", results);
+      // Optional: also try exact ID search and merge if unique
+      try {
+        const cardById = await tcgdex.card.get(queryVal);
+        if (cardById && !results.find(c => c.id === cardById.id)) {
+          results.unshift(cardById); // add exact ID card at start
+        }
+      } catch (err) {
+        console.log("Exact ID not found, continuing with name search...");
       }
 
       if (!results || results.length === 0) {
@@ -107,11 +105,10 @@ document.addEventListener("DOMContentLoaded", () => {
           `;
         })
         .join("");
+
     } catch (err) {
       console.error("Error fetching cards:", err);
       resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
     }
   });
 });
-
-
