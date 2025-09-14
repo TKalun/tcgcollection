@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Step 4: Render all results in grid gallery
       resultsDiv.innerHTML = results
         .map(c => {
-          const imgUrl = (c.getImageURL !== "")? c.getImageURL("high", "png") : "images/fallback.png";
+          const imgUrl = c.getImageURL ? c.getImageURL("high", "png") : "images/Ditto404.png";
         const tcgplayerPriceNorm = c.pricing?.tcgplayer?.normal?.marketPrice || c.pricing?.tcgplayer?.unlimited?.marketPrice || "None";
         // const tcgplayerPriceReverse = c.pricing?.tcgplayer?.reverse-holofoil?.market || "None";
         // const weakness = c.weaknesses?.[0]?.type || "None";
@@ -107,7 +107,6 @@ document.addEventListener("DOMContentLoaded", () => {
               <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
               <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
               <p><strong>TCGPlayer Price - Normal:</strong> ${tcgplayerPriceNorm}</p>
-              <p>${imgURL}</p>
 
               
             </div>
