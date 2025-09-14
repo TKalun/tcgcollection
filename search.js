@@ -101,7 +101,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
           return `
             <div class="card">
-              ${imgUrl ? `<img src="${imgUrl}" alt="${c.name || "Unknown"}" />` : "images/Ditto404.png"}
+              ${imgUrl ? `<img src="${imgUrl}" 
+             alt="${c.name || "Unknown"}" 
+             onerror="this.onerror=null; this.src='images/fallback.png';" />}
+             
               <h3>${c.name || "Unknown Name"}</h3>
               <p><strong>ID:</strong> ${c.id || c.number || "N/A"}</p>
               <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
