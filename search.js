@@ -52,7 +52,7 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
 });
 
 
-// TCGdex card search (Grid Gallery)
+// TCGdex card search (Grid Gallery + Partial Name Matches)
 document.addEventListener("DOMContentLoaded", () => { 
   const searchForm = document.getElementById("tcgIdForm");
   const cardQueryInput = document.getElementById("tcgIdQuery");
@@ -69,15 +69,15 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       let results = [];
 
-      // Fallback to name search first
-      results = await tcgdex.card.list(new Query().equal("name", queryVal));
-      console.log("SDK response:", results);
+      // Fetch cards by partial name match
+      results = await tcgdex.card.list(new Query().like("name", queryVal));
+      console.log("Partial name search results:", results);
 
-      // Optional: also try exact ID search and merge if unique
+      // Optional: also try exact ID search and add it if not in results
       try {
         const cardById = await tcgdex.card.get(queryVal);
         if (cardById && !results.find(c => c.id === cardById.id)) {
-          results.unshift(cardById); // add exact ID card at start
+          results.unshift(cardById); // add exact ID card first
         }
       } catch (err) {
         console.log("Exact ID not found, continuing with name search...");
@@ -112,3 +112,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
