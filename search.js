@@ -101,13 +101,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
           return `
             <div class="card">
-              ${imgUrl ? `<img src="${imgUrl}" alt="${c.name || "Unknown"}" />` : ""}
+              ${imgUrl ? `<img src="${imgUrl}" alt="${c.name || "Unknown"}" />` : "images/Ditto404.png"}
               <h3>${c.name || "Unknown Name"}</h3>
               <p><strong>ID:</strong> ${c.id || c.number || "N/A"}</p>
               <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
               <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
               <p><strong>TCGPlayer Price - Normal:</strong> ${tcgplayerPriceNorm}</p>
-              <p><img src="${imgUrl}"></p>
+
               
             </div>
           `;
