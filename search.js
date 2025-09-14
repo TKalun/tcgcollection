@@ -107,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
               <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
               <p><strong>TCGPlayer Price - Normal:</strong> ${tcgplayerPriceNorm}</p>
-              <p>${c.getImageURL}</p>
+              <p>${c.getImageURL.this.image}</p>
 
               
             </div>
