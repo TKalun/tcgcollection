@@ -53,8 +53,9 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
 
 
 // TCGdex card search (Grid Gallery + Partial Name Matches)
-document.addEventListener("DOMContentLoaded", () => { 
+document.addEventListener("DOMContentLoaded", () => {
   const searchForm = document.getElementById("tcgIdForm");
+  const fieldSelect = document.getElementById("fieldSelect");
   const cardQueryInput = document.getElementById("tcgIdQuery");
   const resultsDiv = document.getElementById("cardResult");
 
@@ -63,44 +64,55 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!cardQueryInput || !resultsDiv) return;
 
     const queryVal = cardQueryInput.value.trim();
+    const field = fieldSelect?.value || "name";
     resultsDiv.innerHTML = "<p>Searching...</p>";
-    console.log("Search query:", queryVal);
+    console.log(`Searching ${field} for "${queryVal}"`);
 
     try {
-      let results = [];
+      // Step 1: Query lightweight list of cards
+      let results = await tcgdex.card.list(new Query().like(field, queryVal));
+      console.log("Lightweight results:", results);
 
-      // Fetch cards by partial name match
-      results = await tcgdex.card.list(new Query().like("name", queryVal));
-      console.log("Partial name search results:", results);
+      // Step 2: Fetch full card data for each result
+      results = await Promise.all(
+        results.map(async c => {
+          try {
+            const fullCard = await tcgdex.card.get(c.id);
+            return fullCard || c; // fallback if get() fails
+          } catch {
+            return c;
+          }
+        })
+      );
 
-      // Optional: also try exact ID search and add it if not in results
-      try {
-        const cardById = await tcgdex.card.get(queryVal);
-        if (cardById && !results.find(c => c.id === cardById.id)) {
-          results.unshift(cardById); // add exact ID card first
-        }
-      } catch (err) {
-        console.log("Exact ID not found, continuing with name search...");
-      }
-
+      // Step 3: Handle no results
       if (!results || results.length === 0) {
-        resultsDiv.innerHTML = `<p>No cards found for "${queryVal}"</p>`;
+        resultsDiv.innerHTML = `<p>No cards found for "${queryVal}" in ${field}</p>`;
         return;
       }
 
-      // Render all results in grid
+      // Step 4: Render all results in grid gallery
       resultsDiv.innerHTML = results
         .map(c => {
           const imgUrl = c.getImageURL ? c.getImageURL("high", "png") : "";
+          const series = c.set?.series || "Unknown Series";
+          const ability = c.abilities?.[0]?.name || "None";
+          const weakness = c.weaknesses?.[0]?.type || "None";
+          const resistance = c.resistances?.[0]?.type || "None";
+
           return `
             <div class="card">
               ${imgUrl ? `<img src="${imgUrl}" alt="${c.name || "Unknown"}" />` : ""}
               <h3>${c.name || "Unknown Name"}</h3>
               <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
+              <p><strong>Series:</strong> ${series}</p>
               <p><strong>ID:</strong> ${c.id || c.number || "N/A"}</p>
               <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
               <p><strong>HP:</strong> ${c.hp || "N/A"}</p>
               <p><strong>Types:</strong> ${(c.types?.length ? c.types.join(", ") : "N/A")}</p>
+              <p><strong>Ability:</strong> ${ability}</p>
+              <p><strong>Weakness:</strong> ${weakness}</p>
+              <p><strong>Resistance:</strong> ${resistance}</p>
             </div>
           `;
         })
@@ -112,4 +124,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
