@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
               <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
               <p><strong>TCGPlayer Price - Normal:</strong> ${tcgplayerPriceNorm}</p>
-              //<p><strong>TCGPlayer Price - Holofoil:</strong> ${tcgplayerPriceHolo}</p>
+              /*<p><strong>TCGPlayer Price - Holofoil:</strong> ${tcgplayerPriceHolo}</p>
               //<p><strong>TCGPlayer Price - Reverse Holo:</strong> ${tcgplayerPriceReverse}</p>
 
 
@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
               //<p><strong>Ability:</strong> ${ability}</p>
               //<p><strong>Weakness:</strong> ${weakness}</p>
               //<p><strong>Resistance:</strong> ${resistance}</p>
-              
+              */
             </div>
           `;
         })
