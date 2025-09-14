@@ -94,7 +94,16 @@ document.addEventListener("DOMContentLoaded", () => {
       // Step 4: Render all results in grid gallery
       resultsDiv.innerHTML = results
         .map(c => {
-          const imgUrl = (c.getImageURL !== "")? c.getImageURL("high", "png") : "images/fallback.png";
+          let imgUrl = "";
+         // Check if function exists and returns a value
+         if (typeof c.getImageURL === "function") {
+              imgUrl = c.getImageURL("high", "png");
+         }
+         // If result is null/empty, fallback to local placeholder
+         if (!imgUrl) {
+            imgUrl = "images/fallback.png";
+         }
+         
         const tcgplayerPriceNorm = c.pricing?.tcgplayer?.normal?.marketPrice || c.pricing?.tcgplayer?.unlimited?.marketPrice || "None";
         // const tcgplayerPriceReverse = c.pricing?.tcgplayer?.reverse-holofoil?.market || "None";
         // const weakness = c.weaknesses?.[0]?.type || "None";
