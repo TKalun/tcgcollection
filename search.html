@@ -65,11 +65,20 @@
   <div id="results"></div>
 
   <!-- TCGdex search by name -->
-  <form id="tcgIdForm" style="margin-top: 20px;">
-    <input type="text" id="tcgIdQuery" placeholder="Enter TCGdex card name (e.g. Furret)" required />
-    <button type="submit">Search TCGdex</button>
-  </form>
-  <div id="cardResult"></div>
+<form id="tcgIdForm" style="margin-top: 20px;">
+  <select id="fieldSelect">
+    <option value="name">Name</option>
+    <option value="id">ID</option>
+    <option value="set.name">Set Name</option>
+    <option value="rarity">Rarity</option>
+    <option value="types">Type</option>
+  </select>
+  <input type="text" id="tcgIdQuery" placeholder="Enter search value" required />
+  <button type="submit">Search TCGdex</button>
+</form>
+
+<div id="cardResult"></div>
+
 
   <!-- External JS -->
   <script type="module" src="search.js"></script>
