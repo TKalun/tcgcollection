@@ -96,11 +96,9 @@ document.addEventListener("DOMContentLoaded", () => {
         .map(c => {
           const imgUrl = c.getImageURL ? c.getImageURL("high", "png") : "";
         const tcgplayerPriceNorm = c.pricing?.tcgplayer?.normal?.marketPrice || "None";
-        // const tcgplayerPriceHolo = c.pricing?.tcgplayer?.holofoil?.market || "None";
+        const tcgplayerPriceUnlimited = c.pricing?.tcgplayer?.unlimited?.marketPrice || "None";
         // const tcgplayerPriceReverse = c.pricing?.tcgplayer?.reverse-holofoil?.market || "None";
-        // const ability = c.abilities?.[0]?.name || "None";
         // const weakness = c.weaknesses?.[0]?.type || "None";
-        // const resistance = c.resistances?.[0]?.type || "None";
 
           return `
             <div class="card">
@@ -110,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
               <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
               <p><strong>TCGPlayer Price - Normal:</strong> ${tcgplayerPriceNorm}</p>
-
+              <p><strong>TCGPlayer Price - Unlimited:</strong> ${tcgplayerPriceUnlimited}</p>
               
             </div>
           `;
