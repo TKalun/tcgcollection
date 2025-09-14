@@ -98,8 +98,6 @@ document.addEventListener("DOMContentLoaded", () => {
           const tcgplayerPriceNorm = c.pricing.tcgplayer.normal || "None";
           const tcgplayerPriceHolo = c.pricing.tcgplayer.holofoil || "None";
           const tcgplayerPriceReverse = c.pricing.tcgplayer.reverse-holofoil || "None";
-          const tcgplayerPriceFirstEd = c.pricing.tcgplayer.1st-edition || "None";
-          const tcgplayerPriceFirstEdHolo = c.pricing.tcgplayer.1st-edition-holofoil || "None";
         //const ability = c.abilities?.[0]?.name || "None";
         //const weakness = c.weaknesses?.[0]?.type || "None";
         //const resistance = c.resistances?.[0]?.type || "None";
@@ -114,8 +112,6 @@ document.addEventListener("DOMContentLoaded", () => {
               <p><strong>TCGPlayer Price - Normal:</strong> ${tcgplayerPriceNorm}</p>
               <p><strong>TCGPlayer Price - Holofoil:</strong> ${tcgplayerPriceHolo}</p>
               <p><strong>TCGPlayer Price - Reverse Holo:</strong> ${tcgplayerPriceReverse}</p>
-              <p><strong>TCGPlayer Price - 1st Edition:</strong> ${tcgplayerPriceFirstEd}</p>
-              <p><strong>TCGPlayer Price - 1st Edition Holo:</strong> ${tcgplayerPriceFirstEdHolo}</p>
 
 
               //<p><strong>HP:</strong> ${c.hp || "N/A"}</p>
