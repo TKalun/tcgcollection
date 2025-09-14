@@ -96,11 +96,11 @@ document.addEventListener("DOMContentLoaded", () => {
         .map(c => {
           const imgUrl = c.getImageURL ? c.getImageURL("high", "png") : "";
         const tcgplayerPriceNorm = c.pricing?.tcgplayer || "None";
-        //const tcgplayerPriceHolo = c.pricing?.tcgplayer?.holofoil?.market || "None";
-        //const tcgplayerPriceReverse = c.pricing?.tcgplayer?.reverse-holofoil?.market || "None";
-        //const ability = c.abilities?.[0]?.name || "None";
-        //const weakness = c.weaknesses?.[0]?.type || "None";
-        //const resistance = c.resistances?.[0]?.type || "None";
+        // const tcgplayerPriceHolo = c.pricing?.tcgplayer?.holofoil?.market || "None";
+        // const tcgplayerPriceReverse = c.pricing?.tcgplayer?.reverse-holofoil?.market || "None";
+        // const ability = c.abilities?.[0]?.name || "None";
+        // const weakness = c.weaknesses?.[0]?.type || "None";
+        // const resistance = c.resistances?.[0]?.type || "None";
 
           return `
             <div class="card">
@@ -110,16 +110,16 @@ document.addEventListener("DOMContentLoaded", () => {
               <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
               <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
               <p><strong>TCGPlayer Price - Normal:</strong> ${tcgplayerPriceNorm}</p>
-              /*<p><strong>TCGPlayer Price - Holofoil:</strong> ${tcgplayerPriceHolo}</p>
-              //<p><strong>TCGPlayer Price - Reverse Holo:</strong> ${tcgplayerPriceReverse}</p>
+              // <p><strong>TCGPlayer Price - Holofoil:</strong> ${tcgplayerPriceHolo}</p>
+              // <p><strong>TCGPlayer Price - Reverse Holo:</strong> ${tcgplayerPriceReverse}</p>
 
 
-              //<p><strong>HP:</strong> ${c.hp || "N/A"}</p>
-              //<p><strong>Types:</strong> ${(c.types?.length ? c.types.join(", ") : "N/A")}</p>
-              //<p><strong>Ability:</strong> ${ability}</p>
-              //<p><strong>Weakness:</strong> ${weakness}</p>
-              //<p><strong>Resistance:</strong> ${resistance}</p>
-              */
+              // <p><strong>HP:</strong> ${c.hp || "N/A"}</p>
+              // <p><strong>Types:</strong> ${(c.types?.length ? c.types.join(", ") : "N/A")}</p>
+              // <p><strong>Ability:</strong> ${ability}</p>
+              // <p><strong>Weakness:</strong> ${weakness}</p>
+              // <p><strong>Resistance:</strong> ${resistance}</p>
+              
             </div>
           `;
         })
