@@ -94,8 +94,10 @@ document.addEventListener("DOMContentLoaded", () => {
       // Step 4: Render all results in grid gallery
       resultsDiv.innerHTML = results
         .map(c => {
-          const imgUrl = c.getImageURL ? c.getImageURL("high", "png") : "";
-        const tcgplayerPriceNorm = c.pricing?.tcgplayer?.normal?.marketPrice || c.pricing?.tcgplayer?.unlimited?.marketPrice || "None";
+          const imgUrl = c.getImageURL 
+                ? c.getImageURL("high", "png") 
+                 : (c.set?.boosters?.[0]?.artwork_front || "");
+           const tcgplayerPriceNorm = c.pricing?.tcgplayer?.normal?.marketPrice || c.pricing?.tcgplayer?.unlimited?.marketPrice || "None";
         // const tcgplayerPriceReverse = c.pricing?.tcgplayer?.reverse-holofoil?.market || "None";
         // const weakness = c.weaknesses?.[0]?.type || "None";
 
