@@ -73,17 +73,21 @@ document.addEventListener("DOMContentLoaded", () => {
       let results = await tcgdex.card.list(new Query().like(field, queryVal));
       console.log("Lightweight results:", results);
 
-      // Step 2: Fetch full card data for each result
-      results = await Promise.all(
-        results.map(async c => {
-          try {
-            const fullCard = await tcgdex.card.get(c.id);
-            return fullCard || c; // fallback if get() fails
-          } catch {
-            return c;
-          }
-        })
-      );
+      // Step 2: Fetch full card data for each result and only keep printed cards
+results = await Promise.all(
+  results.map(async c => {
+    try {
+      const fullCard = await tcgdex.card.get(c.id);
+      // Only return the card if it is printed
+      return fullCard?.isPrinted ? fullCard : null;
+    } catch {
+      return null;
+    }
+  })
+);
+
+// Remove any null entries (non-printed or failed fetches)
+results = results.filter(c => c !== null);
 
       // Step 3: Handle no results
       if (!results || results.length === 0) {
