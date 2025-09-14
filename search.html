@@ -6,11 +6,51 @@
   <title>Search</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
+
     input { padding: 8px; width: 250px; margin-right: 8px; }
     button { padding: 8px 12px; margin-top: 5px; }
-    #results, #cardResult { margin-top: 20px; }
-    .card { padding: 10px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px; }
-    .card img { width: 200px; display: block; margin-bottom: 10px; }
+
+    /* Grid layout for both local DB and TCGdex results */
+    #results, #cardResult {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+      justify-items: center;
+    }
+
+    /* Card styling */
+    .card {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+      width: 180px; /* Fixed width for uniform cards */
+      cursor: pointer;
+    }
+
+    /* Hover effect */
+    .card:hover {
+      transform: translateY(-8px) scale(1.05);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+
+    /* Card image */
+    .card img {
+      width: 100%;
+      display: block;
+    }
+
+    /* Card info */
+    .card .card-info {
+      padding: 8px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+    }
   </style>
 </head>
 <body>
@@ -23,9 +63,9 @@
   </form>
   <div id="results"></div>
 
-  <!-- TCGdex search -->
+  <!-- TCGdex search by name -->
   <form id="tcgIdForm" style="margin-top: 20px;">
-    <input type="text" id="tcgIdQuery" placeholder="Enter TCGdex card name or ID (e.g. Furret OR swsh3-136)" required />
+    <input type="text" id="tcgIdQuery" placeholder="Enter TCGdex card name (e.g. Furret)" required />
     <button type="submit">Search TCGdex</button>
   </form>
   <div id="cardResult"></div>
