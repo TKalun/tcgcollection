@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
       resultsDiv.innerHTML = results
         .map(c => {
           const imgUrl = c.getImageURL ? c.getImageURL("high", "png") : "";
-          const series = c.set?.series || "Unknown Series";
+          const tcgplayerPrice = c.set?.series || "Unknown";
           const ability = c.abilities?.[0]?.name || "None";
           const weakness = c.weaknesses?.[0]?.type || "None";
           const resistance = c.resistances?.[0]?.type || "None";
@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
               ${imgUrl ? `<img src="${imgUrl}" alt="${c.name || "Unknown"}" />` : ""}
               <h3>${c.name || "Unknown Name"}</h3>
               <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
-              <p><strong>Series:</strong> ${series}</p>
+              <p><strong>TCGPlayer Price:</strong> ${tcgplayerPrice}</p>
               <p><strong>ID:</strong> ${c.id || c.number || "N/A"}</p>
               <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
               <p><strong>HP:</strong> ${c.hp || "N/A"}</p>
