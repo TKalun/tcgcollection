@@ -51,87 +51,25 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
   }
 });
 
-/*
-// TCGdex card search (Grid Gallery + Partial Name Matches)
 document.addEventListener("DOMContentLoaded", () => {
   const searchForm = document.getElementById("tcgIdForm");
   const fieldSelect = document.getElementById("fieldSelect");
   const cardQueryInput = document.getElementById("tcgIdQuery");
   const resultsDiv = document.getElementById("cardResult");
 
-  searchForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!cardQueryInput || !resultsDiv) return;
-
-    const queryVal = cardQueryInput.value.trim();
-    const field = fieldSelect?.value || "name";
-    resultsDiv.innerHTML = "<p>Searching...</p>";
-    console.log(`Searching ${field} for "${queryVal}"`);
-
-    try {
-      // Step 1: Query lightweight list of cards
-      let results = await tcgdex.card.list(new Query().like(field, queryVal));
-      console.log("Lightweight results:", results);
-
-      // Step 2: Fetch full card data for each result
-      results = await Promise.all(
-        results.map(async c => {
-          try {
-            const fullCard = await tcgdex.card.get(c.id);
-            return fullCard || c; // fallback if get() fails
-          } catch {
-            return c;
-          }
-        })
-      );
-
-      // Step 3: Handle no results
-      if (!results || results.length === 0) {
-        resultsDiv.innerHTML = `<p>No cards found for "${queryVal}" in ${field}</p>`;
-        return;
-      }
-
-      // Step 4: Render all results in grid gallery
-      resultsDiv.innerHTML = results
-        .map(c => {
-          const imgUrl = c.getImageURL ? c.getImageURL("high", "png") : "images/Ditto404.png";
-        const tcgplayerPriceNorm = c.pricing?.tcgplayer?.marketPrice || c.pricing?.tcgplayer?.unlimited?.marketPrice || "None";
-        const tcgplayerLastUpdated = c.pricing?.tcgplayer?.updated || "None";
-        // const tcgplayerPriceReverse = c.pricing?.tcgplayer?.reverse-holofoil?.market || "None";
-        // const weakness = c.weaknesses?.[0]?.type || "None";
-
-          return `
-            <div class="card">
-              <img src="${imgUrl}" alt="${c.name || "Unknown"}" onerror="this.onerror=null; this.src='images/Ditto404_2.png';" />
-              <h3>${c.name || "Unknown Name"}</h3>
-              <p><strong>ID:</strong> ${c.id || c.number || "N/A"}</p>
-              <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
-              <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
-              <p><strong>TCGPlayer Price - Normal:</strong> ${tcgplayerPriceNorm}</p>
-              <p><strong>Last updated:</strong> ${tcgplayerLastUpdated}</p> 
-
-              
-            </div>
-          `;
-        })
-        .join("");
-
-    } catch (err) {
-      console.error("Error fetching cards:", err);
-      resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
-    }
-  });
-});
-*/
-document.addEventListener("DOMContentLoaded", () => {
-  const searchForm = document.getElementById("tcgIdForm");
-  const fieldSelect = document.getElementById("fieldSelect");
-  const cardQueryInput = document.getElementById("tcgIdQuery");
-  const resultsDiv = document.getElementById("cardResult");
+  const detailPanel = document.getElementById("cardDetail");
+  const detailContent = document.getElementById("cardDetailContent");
+  const closePanel = document.getElementById("closePanel");
 
   const API_BASE = "https://api.pokemontcg.io/v2";
   const API_KEY = "3c0afac9-db62-4f43-8d3b-d55a0a04b01b";
 
+  // Close side panel
+  closePanel.addEventListener("click", () => {
+    detailPanel.classList.remove("active");
+    setTimeout(() => detailPanel.classList.add("hidden"), 300);
+  });
+
   searchForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!cardQueryInput || !resultsDiv) return;
@@ -139,32 +77,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const queryVal = cardQueryInput.value.trim();
     const field = fieldSelect?.value || "name";
     resultsDiv.innerHTML = "<p>Searching...</p>";
-    console.log(`Searching ${field} for "${queryVal}"`);
 
     try {
-      // Step 1: Build Pokémon TCG API query
       const url = `${API_BASE}/cards?q=${encodeURIComponent(field + ":" + queryVal)}`;
       const res = await fetch(url, {
-        headers: {
-          "X-Api-Key": API_KEY
-        }
+        headers: { "X-Api-Key": API_KEY }
       });
 
-      if (!res.ok) {
-        throw new Error(`API Error ${res.status}: ${res.statusText}`);
-      }
+      if (!res.ok) throw new Error(`API Error ${res.status}: ${res.statusText}`);
 
       const json = await res.json();
       const results = json.data || [];
-      console.log("API results:", results);
 
-      // Step 2: Handle no results
       if (results.length === 0) {
         resultsDiv.innerHTML = `<p>No cards found for "${queryVal}" in ${field}</p>`;
         return;
       }
 
-      // Step 3: Render all results in grid gallery
+      // 🔹 Keep your gallery intact
       resultsDiv.innerHTML = results
         .map(c => {
           const imgUrl = c.images?.large || c.images?.small || "images/Ditto404.png";
@@ -175,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const tcgplayerLastUpdated = c.tcgplayer?.updatedAt || "None";
 
           return `
-            <div class="card">
+            <div class="card" data-card='${JSON.stringify(c).replace(/'/g, "&apos;")}'>
               <img src="${imgUrl}" alt="${c.name || "Unknown"}" 
                    onerror="this.onerror=null; this.src='images/Ditto404_2.png';" />
               <h3>${c.name || "Unknown Name"}</h3>
@@ -189,9 +119,39 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .join("");
 
+      // 🔹 Add click events to open side panel
+      document.querySelectorAll(".card").forEach(cardEl => {
+        cardEl.addEventListener("click", () => {
+          const card = JSON.parse(cardEl.dataset.card.replace(/&apos;/g, "'"));
+          showCardDetail(card);
+        });
+      });
+
     } catch (err) {
-      console.error("Error fetching cards:", err);
       resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
     }
   });
+
+  // 🔹 Fill side panel with clicked card data
+  function showCardDetail(c) {
+    const imgUrl = c.images?.large || c.images?.small || "images/Ditto404.png";
+    const tcgplayerPriceNorm =
+      c.tcgplayer?.prices?.normal?.market ||
+      c.tcgplayer?.prices?.unlimited?.market ||
+      "None";
+    const tcgplayerLastUpdated = c.tcgplayer?.updatedAt || "None";
+
+    detailContent.innerHTML = `
+      <img src="${imgUrl}" alt="${c.name}" style="width:100%;" />
+      <h2>${c.name}</h2>
+      <p><strong>ID:</strong> ${c.id}</p>
+      <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
+      <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
+      <p><strong>TCGPlayer Price:</strong> ${tcgplayerPriceNorm}</p>
+      <p><strong>Last Updated:</strong> ${tcgplayerLastUpdated}</p>
+    `;
+
+    detailPanel.classList.remove("hidden");
+    setTimeout(() => detailPanel.classList.add("active"), 10);
+  }
 });

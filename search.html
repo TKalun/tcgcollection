@@ -79,6 +79,42 @@
 
 <div id="cardResult"></div>
 
+.side-panel {
+  position: fixed;
+  top: 0;
+  right: -400px; /* offscreen */
+  width: 400px;
+  height: 100%;
+  background: #fff;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.3);
+  padding: 20px;
+  overflow-y: auto;
+  transition: right 0.3s ease;
+  z-index: 9999;
+}
+.side-panel.active {
+  right: 0;
+}
+.side-panel.hidden {
+  display: none;
+}
+
+#closePanel {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+<!-- Side Panel -->
+<div id="cardDetail" class="side-panel hidden">
+  <button id="closePanel">✖</button>
+  <div id="cardDetailContent"></div>
+</div>
+
 
   <!-- External JS -->
   <script type="module" src="search.js"></script>
