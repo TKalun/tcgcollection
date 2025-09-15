@@ -141,32 +141,49 @@ document.addEventListener("DOMContentLoaded", () => {
  // ------------------------
   // SIDE PANEL LOGIC
   // ------------------------
-  async function openSidePanel(cardId) {
+  function openSidePanel(cardId, cardEl) {
+  const sidePanel = document.getElementById("sidePanel");
+  const panelContent = document.getElementById("panelContent");
 
-    try {
-      const res = await fetch(`${API_BASE}/cards/${cardId}`, {
-        headers: { "X-Api-Key": API_KEY },
-      });
-      if (!res.ok) throw new Error("Failed to fetch card details");
-      const data = await res.json();
-      const card = data.data;
+  // Try to get card data from dataset
+  const cardData = cardEl.dataset.card
+    ? JSON.parse(cardEl.dataset.card.replace(/&apos;/g, "'"))
+    : null;
 
-      panelContent.innerHTML = `
-        <h2>${card.name}</h2>
-        <img src="${card.images.large}" alt="${card.name}" style="max-width:100%;">
-        <p><strong>Set:</strong> ${card.set?.name || "Unknown"}</p>
-        <p><strong>Rarity:</strong> ${card.rarity || "N/A"}</p>
-        <p><strong>Artist:</strong> ${card.artist || "Unknown"}</p>
-        <p><strong>HP:</strong> ${card.hp || "N/A"}</p>
-        <p><strong>Types:</strong> ${(card.types || []).join(", ") || "N/A"}</p>
-      `;
-
-      sidePanel.classList.add("open");
-    } catch (err) {
-      console.error("Error loading card:", err);
-      panelContent.innerHTML = `<p style="color:red;">Error loading card details</p>`;
-    }
+  if (cardData) {
+    showPanelContent(cardData);
+    return;
   }
+
+  // fallback: fetch from API if no cached data
+  fetch(`${API_BASE}/cards/${cardId}`, {
+    headers: { "X-Api-Key": API_KEY }
+  })
+    .then(res => res.json())
+    .then(data => showPanelContent(data.data))
+    .catch(err => {
+      panelContent.innerHTML = `<p style="color:red;">Error loading card</p>`;
+      console.error(err);
+    });
+}
+
+function showPanelContent(card) {
+  const panelContent = document.getElementById("panelContent");
+  const sidePanel = document.getElementById("sidePanel");
+
+  panelContent.innerHTML = `
+    <h2>${card.name}</h2>
+    <img src="${card.images.large || card.images.small}" alt="${card.name}" style="max-width:100%;">
+    <p><strong>Set:</strong> ${card.set?.name || "Unknown"}</p>
+    <p><strong>Rarity:</strong> ${card.rarity || "N/A"}</p>
+    <p><strong>Artist:</strong> ${card.artist || "Unknown"}</p>
+    <p><strong>HP:</strong> ${card.hp || "N/A"}</p>
+    <p><strong>Types:</strong> ${(card.types || []).join(", ") || "N/A"}</p>
+  `;
+
+  sidePanel.classList.add("open");
+}
+
 
   document.getElementById("closePanel")?.addEventListener("click", () => {
     document.getElementById("sidePanel").classList.remove("open");
