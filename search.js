@@ -1,11 +1,11 @@
 // ------------------------
 // Import TCGdex SDK
 // ------------------------
-import TCGdex, { Query } from 'https://unpkg.com/@tcgdex/sdk?module';
+/*import TCGdex, { Query } from 'https://unpkg.com/@tcgdex/sdk?module';
 const tcgdex = new TCGdex("en");
 
 console.log("TCGdex SDK loaded:", tcgdex);
-
+*/
 
 const API_BASE = "https://cf-pages-worker-d1-app.thomasklai88.workers.dev";
 const token = localStorage.getItem("token");
@@ -51,7 +51,7 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
   }
 });
 
-
+/*
 // TCGdex card search (Grid Gallery + Partial Name Matches)
 document.addEventListener("DOMContentLoaded", () => {
   const searchForm = document.getElementById("tcgIdForm");
@@ -122,3 +122,78 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+*/
+document.addEventListener("DOMContentLoaded", () => {
+  const searchForm = document.getElementById("tcgIdForm");
+  const fieldSelect = document.getElementById("fieldSelect");
+  const cardQueryInput = document.getElementById("tcgIdQuery");
+  const resultsDiv = document.getElementById("cardResult");
+
+  const API_BASE = "https://api.tcgdex.net/v2/en";
+  const API_KEY = "3c0afac9-db62-4f43-8d3b-d55a0a04b01b";
+
+  searchForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!cardQueryInput || !resultsDiv) return;
+
+    const queryVal = cardQueryInput.value.trim();
+    const field = fieldSelect?.value || "name";
+    resultsDiv.innerHTML = "<p>Searching...</p>";
+    console.log(`Searching ${field} for "${queryVal}"`);
+
+    try {
+      // Step 1: Call the API with filters
+      const res = await fetch(
+        `${API_BASE}/cards?${field}=${encodeURIComponent(queryVal)}`,
+        {
+          headers: {
+            "Authorization": `Bearer ${API_KEY}`
+          }
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error(`API Error ${res.status}: ${res.statusText}`);
+      }
+
+      let results = await res.json();
+      console.log("API results:", results);
+
+      // Step 2: Handle no results
+      if (!results || results.length === 0) {
+        resultsDiv.innerHTML = `<p>No cards found for "${queryVal}" in ${field}</p>`;
+        return;
+      }
+
+      // Step 3: Render all results in grid gallery
+      resultsDiv.innerHTML = results
+        .map(c => {
+          const imgUrl = c.images?.large || c.images?.small || "images/Ditto404.png";
+          const tcgplayerPriceNorm =
+            c.tcgplayer?.prices?.normal?.market ||
+            c.tcgplayer?.prices?.unlimited?.market ||
+            "None";
+          const tcgplayerLastUpdated = c.tcgplayer?.updatedAt || "None";
+
+          return `
+            <div class="card">
+              <img src="${imgUrl}" alt="${c.name || "Unknown"}" 
+                   onerror="this.onerror=null; this.src='images/Ditto404_2.png';" />
+              <h3>${c.name || "Unknown Name"}</h3>
+              <p><strong>ID:</strong> ${c.id || c.number || "N/A"}</p>
+              <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
+              <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
+              <p><strong>TCGPlayer Price - Normal:</strong> ${tcgplayerPriceNorm}</p>
+              <p><strong>Last updated:</strong> ${tcgplayerLastUpdated}</p>
+            </div>
+          `;
+        })
+        .join("");
+
+    } catch (err) {
+      console.error("Error fetching cards:", err);
+      resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+    }
+  });
+});
+
