@@ -119,43 +119,52 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .join("");
 
-     // Attach click handlers to cards
-resultsDiv.querySelectorAll(".card").forEach(cardEl => {
-  cardEl.addEventListener("click", () => {
-    const cardId = cardEl.dataset.id; // store id in dataset
-    openSidePanel(cardId);
+       // Attach click listeners to open side panel
+      resultsDiv.querySelectorAll(".card").forEach((cardEl) => {
+        cardEl.addEventListener("click", () => {
+          const cardId = cardEl.dataset.id;
+          openSidePanel(cardId);
+        });
+      });
+    } catch (err) {
+      console.error("Error fetching cards:", err);
+      resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+    }
   });
-});
 
-// Function to open side panel with card data
-async function openSidePanel(cardId) {
-  const sidePanel = document.getElementById("sidePanel");
-  const panelContent = document.getElementById("panelContent");
+ // ------------------------
+  // SIDE PANEL LOGIC
+  // ------------------------
+  async function openSidePanel(cardId) {
+    const sidePanel = document.getElementById("sidePanel");
+    const panelContent = document.getElementById("panelContent");
 
-  try {
-    const res = await fetch(`https://api.pokemontcg.io/v2/cards/${cardId}`, {
-      headers: { "X-Api-Key": "3c0afac9-db62-4f43-8d3b-d55a0a04b01b" }
-    });
-    const data = await res.json();
-    const card = data.data;
+    try {
+      const res = await fetch(`${API_BASE}/cards/${cardId}`, {
+        headers: { "X-Api-Key": API_KEY },
+      });
+      if (!res.ok) throw new Error("Failed to fetch card details");
+      const data = await res.json();
+      const card = data.data;
 
-    panelContent.innerHTML = `
-      <h2>${card.name}</h2>
-      <img src="${card.images.large}" alt="${card.name}" style="max-width:100%;">
-      <p><strong>Set:</strong> ${card.set?.name || "Unknown"}</p>
-      <p><strong>Rarity:</strong> ${card.rarity || "N/A"}</p>
-      <p><strong>Artist:</strong> ${card.artist || "Unknown"}</p>
-      <p><strong>HP:</strong> ${card.hp || "N/A"}</p>
-      <p><strong>Types:</strong> ${(card.types || []).join(", ") || "N/A"}</p>
-    `;
+      panelContent.innerHTML = `
+        <h2>${card.name}</h2>
+        <img src="${card.images.large}" alt="${card.name}" style="max-width:100%;">
+        <p><strong>Set:</strong> ${card.set?.name || "Unknown"}</p>
+        <p><strong>Rarity:</strong> ${card.rarity || "N/A"}</p>
+        <p><strong>Artist:</strong> ${card.artist || "Unknown"}</p>
+        <p><strong>HP:</strong> ${card.hp || "N/A"}</p>
+        <p><strong>Types:</strong> ${(card.types || []).join(", ") || "N/A"}</p>
+      `;
 
-    sidePanel.classList.add("open");
-  } catch (err) {
-    panelContent.innerHTML = `<p style="color:red;">Error loading card details</p>`;
+      sidePanel.classList.add("open");
+    } catch (err) {
+      console.error("Error loading card:", err);
+      panelContent.innerHTML = `<p style="color:red;">Error loading card details</p>`;
+    }
   }
-}
 
-// Close panel button
-document.getElementById("closePanel").addEventListener("click", () => {
-  document.getElementById("sidePanel").classList.remove("open");
+  document.getElementById("closePanel")?.addEventListener("click", () => {
+    document.getElementById("sidePanel").classList.remove("open");
+  });
 });
