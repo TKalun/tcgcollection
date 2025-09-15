@@ -102,11 +102,10 @@ document.addEventListener("DOMContentLoaded", () => {
               <img src="${imgUrl}" alt="${c.name || "Unknown"}" 
                    onerror="this.onerror=null; this.src='images/Ditto404_2.png';" />
               <h3>${c.name || "Unknown Name"}</h3>
-              <p><strong>ID:</strong> ${c.id || c.number || "N/A"}</p>
               <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
               <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
+              <p><strong>#:</strong> ${c.number || "N/A"}</p>
               <p><strong>TCGPlayer Price - Normal:</strong> ${tcgplayerPriceNorm}</p>
-              <p><strong>Last updated:</strong> ${tcgplayerLastUpdated}</p>
             </div>
           `;
         })
@@ -137,9 +136,9 @@ document.addEventListener("DOMContentLoaded", () => {
     detailContent.innerHTML = `
       <img src="${imgUrl}" alt="${c.name}" style="width:100%;" />
       <h2>${c.name}</h2>
-      <p><strong>ID:</strong> ${c.id}</p>
       <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
       <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
+      <p><strong>#:</strong> ${c.number}</p>
       <p><strong>TCGPlayer Price:</strong> ${tcgplayerPriceNorm}</p>
       <p><strong>Last Updated:</strong> ${tcgplayerLastUpdated}</p>
     `;
