@@ -111,15 +111,15 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .join("");
 
-      // 🔹 Add click events to open side panel
-      document.querySelectorAll(".card").forEach(cardEl => {
+      // Add click listeners for side panel
+      resultsDiv.querySelectorAll(".card").forEach((cardEl) => {
         cardEl.addEventListener("click", () => {
-          const card = JSON.parse(cardEl.dataset.card.replace(/&apos;/g, "'"));
-          showCardDetail(card);
+          const cardData = JSON.parse(cardEl.dataset.card.replace(/&apos;/g, "'"));
+          openSidePanel(cardData);
         });
       });
-
     } catch (err) {
+      console.error("Error fetching cards:", err);
       resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
     }
   });
