@@ -69,19 +69,30 @@
   padding: 16px;
 }
 
-/* Side panel */
 .side-panel {
-  width: 0; /* hidden by default */
-  overflow: hidden;
+  width: 0; /* start hidden */
+  overflow-y: auto; /* allow scrolling inside panel */
   transition: width 0.3s ease;
   background: #fff;
   border-left: 2px solid #ccc;
   box-shadow: -2px 0 5px rgba(0,0,0,0.2);
   padding: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .side-panel.open {
-  width: 350px; /* fixed width when open */
+  width: 350px; /* visible width */
+}
+
+/* Keep top section fixed */
+.side-panel-header {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  padding-bottom: 10px;
+  z-index: 10;
+  border-bottom: 1px solid #ccc;
 }
 
 /* Close button */
@@ -92,6 +103,7 @@
   border: none;
   cursor: pointer;
 }
+
 
 
   </style>
@@ -125,9 +137,15 @@
 
   <!-- Side panel -->
   <div id="sidePanel" class="side-panel">
+  <div class="side-panel-header">
     <button id="closePanel">×</button>
-    <div id="panelContent"></div>
+    <h2 id="panelTitle">Card Details</h2>
   </div>
+  <div id="panelContent">
+    <!-- Card info and image go here -->
+  </div>
+</div>
+
 </div>
 
 

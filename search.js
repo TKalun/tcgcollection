@@ -64,11 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const API_BASE = "https://api.pokemontcg.io/v2";
   const API_KEY = "3c0afac9-db62-4f43-8d3b-d55a0a04b01b";
 
-  // Close side panel
-  closePanel.addEventListener("click", () => {
-    detailPanel.classList.remove("active");
-    setTimeout(() => detailPanel.classList.add("hidden"), 300);
-  });
+  
 
   searchForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -121,6 +117,14 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .join("");
 
+        const sidePanel = document.getElementById("sidePanel");
+        const panelContent = document.getElementById("panelContent");
+        const closePanel = document.getElementById("closePanel");
+        // Close side panel
+        closePanel.addEventListener("click", () => {
+        sidePanel.classList.remove("open");
+        });
+
        // Attach click listeners to open side panel
       resultsDiv.querySelectorAll(".card").forEach((cardEl) => {
         cardEl.addEventListener("click", () => {
@@ -138,8 +142,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // SIDE PANEL LOGIC
   // ------------------------
   async function openSidePanel(cardId) {
-    const sidePanel = document.getElementById("sidePanel");
-    const panelContent = document.getElementById("panelContent");
 
     try {
       const res = await fetch(`${API_BASE}/cards/${cardId}`, {
