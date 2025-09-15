@@ -1,11 +1,4 @@
-// ------------------------
-// Import TCGdex SDK
-// ------------------------
-/*import TCGdex, { Query } from 'https://unpkg.com/@tcgdex/sdk?module';
-const tcgdex = new TCGdex("en");
 
-console.log("TCGdex SDK loaded:", tcgdex);
-*/
 
 const API_BASE = "https://cf-pages-worker-d1-app.thomasklai88.workers.dev";
 const token = localStorage.getItem("token");
@@ -64,7 +57,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const API_BASE = "https://api.pokemontcg.io/v2";
   const API_KEY = "3c0afac9-db62-4f43-8d3b-d55a0a04b01b";
 
-  
+  // Close side panel
+  closePanel.addEventListener("click", () => {
+    detailPanel.classList.remove("active");
+    setTimeout(() => detailPanel.classList.add("hidden"), 300);
+  });
 
   searchForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -101,91 +98,53 @@ document.addEventListener("DOMContentLoaded", () => {
           const tcgplayerLastUpdated = c.tcgplayer?.updatedAt || "None";
 
           return `
-            <div class="card" 
-              data-id="${c.id}" 
-              data-card='${JSON.stringify(c).replace(/'/g, "&apos;")}'>
-            <img src="${imgUrl}" alt="${c.name || "Unknown"}" 
-              onerror="this.onerror=null; this.src='images/Ditto404_2.png';" />
-            <h3>${c.name || "Unknown Name"}</h3>
-            <p><strong>ID:</strong> ${c.id || c.number || "N/A"}</p>
-            <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
-            <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
-            <p><strong>TCGPlayer Price - Normal:</strong> ${tcgplayerPriceNorm}</p>
-            <p><strong>Last updated:</strong> ${tcgplayerLastUpdated}</p>
+            <div class="card" data-card='${JSON.stringify(c).replace(/'/g, "&apos;")}'>
+              <img src="${imgUrl}" alt="${c.name || "Unknown"}" 
+                   onerror="this.onerror=null; this.src='images/Ditto404_2.png';" />
+              <h3>${c.name || "Unknown Name"}</h3>
+              <p><strong>ID:</strong> ${c.id || c.number || "N/A"}</p>
+              <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
+              <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
+              <p><strong>TCGPlayer Price - Normal:</strong> ${tcgplayerPriceNorm}</p>
+              <p><strong>Last updated:</strong> ${tcgplayerLastUpdated}</p>
             </div>
           `;
         })
         .join("");
 
-        const sidePanel = document.getElementById("sidePanel");
-        const panelContent = document.getElementById("panelContent");
-        const closePanel = document.getElementById("closePanel");
-        // Close side panel
-        closePanel.addEventListener("click", () => {
-        sidePanel.classList.remove("open");
-        });
-
-       // Attach click listeners to open side panel
-      resultsDiv.querySelectorAll(".card").forEach((cardEl) => {
+      // 🔹 Add click events to open side panel
+      document.querySelectorAll(".card").forEach(cardEl => {
         cardEl.addEventListener("click", () => {
-          const cardId = cardEl.dataset.id;
-          openSidePanel(cardId);
+          const card = JSON.parse(cardEl.dataset.card.replace(/&apos;/g, "'"));
+          showCardDetail(card);
         });
       });
+
     } catch (err) {
-      console.error("Error fetching cards:", err);
       resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
     }
   });
 
- // ------------------------
-  // SIDE PANEL LOGIC
-  // ------------------------
-  function openSidePanel(cardId, cardEl) {
-  const sidePanel = document.getElementById("sidePanel");
-  const panelContent = document.getElementById("panelContent");
+  // 🔹 Fill side panel with clicked card data
+  function showCardDetail(c) {
+    const imgUrl = c.images?.large || c.images?.small || "images/Ditto404.png";
+    const tcgplayerPriceNorm =
+      c.tcgplayer?.prices?.normal?.market ||
+      c.tcgplayer?.prices?.unlimited?.market ||
+      "None";
+    const tcgplayerLastUpdated = c.tcgplayer?.updatedAt || "None";
 
-  // Try to get card data from dataset
-  const cardData = cardEl.dataset.card
-    ? JSON.parse(cardEl.dataset.card.replace(/&apos;/g, "'"))
-    : null;
+    detailContent.innerHTML = `
+      <img src="${imgUrl}" alt="${c.name}" style="width:100%;" />
+      <h2>${c.name}</h2>
+      <p><strong>ID:</strong> ${c.id}</p>
+      <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
+      <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
+      <p><strong>TCGPlayer Price:</strong> ${tcgplayerPriceNorm}</p>
+      <p><strong>Last Updated:</strong> ${tcgplayerLastUpdated}</p>
+    `;
 
-  if (cardData) {
-    showPanelContent(cardData);
-    return;
+    detailPanel.classList.remove("hidden");
+    setTimeout(() => detailPanel.classList.add("active"), 10);
   }
-
-  // fallback: fetch from API if no cached data
-  fetch(`${API_BASE}/cards/${cardId}`, {
-    headers: { "X-Api-Key": API_KEY }
-  })
-    .then(res => res.json())
-    .then(data => showPanelContent(data.data))
-    .catch(err => {
-      panelContent.innerHTML = `<p style="color:red;">Error loading card</p>`;
-      console.error(err);
-    });
-}
-
-function showPanelContent(card) {
-  const panelContent = document.getElementById("panelContent");
-  const sidePanel = document.getElementById("sidePanel");
-
-  panelContent.innerHTML = `
-    <h2>${card.name}</h2>
-    <img src="${card.images.large || card.images.small}" alt="${card.name}" style="max-width:100%;">
-    <p><strong>Set:</strong> ${card.set?.name || "Unknown"}</p>
-    <p><strong>Rarity:</strong> ${card.rarity || "N/A"}</p>
-    <p><strong>Artist:</strong> ${card.artist || "Unknown"}</p>
-    <p><strong>HP:</strong> ${card.hp || "N/A"}</p>
-    <p><strong>Types:</strong> ${(card.types || []).join(", ") || "N/A"}</p>
-  `;
-
-  sidePanel.classList.add("open");
-}
-
-
-  document.getElementById("closePanel")?.addEventListener("click", () => {
-    document.getElementById("sidePanel").classList.remove("open");
-  });
 });
