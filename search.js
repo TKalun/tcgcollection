@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .map(c => {
           const imgUrl = c.getImageURL ? c.getImageURL("high", "png") : "images/Ditto404.png";
         const tcgplayerPriceNorm = c.pricing?.tcgplayer?.normal?.marketPrice || c.pricing?.tcgplayer?.unlimited?.marketPrice || "None";
-        const tcgplayerLastUpdated = c.pricing?.tcgplayer?.updated?.market || "None";
+        const tcgplayerLastUpdated = c.pricing?.tcgplayer?.updated || "None";
         // const tcgplayerPriceReverse = c.pricing?.tcgplayer?.reverse-holofoil?.market || "None";
         // const weakness = c.weaknesses?.[0]?.type || "None";
 
