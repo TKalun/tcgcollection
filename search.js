@@ -125,26 +125,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 🔹 Fill side panel with clicked card data
-  function showCardDetail(c) {
-    const imgUrl = c.images?.large || c.images?.small || "images/Ditto404.png";
-    const tcgplayerPriceNorm =
-      c.tcgplayer?.prices?.normal?.market ||
-      c.tcgplayer?.prices?.unlimited?.market ||
-      "None";
-    const tcgplayerLastUpdated = c.tcgplayer?.updatedAt || "None";
-
-    detailContent.innerHTML = `
-      <img src="${imgUrl}" alt="${c.name}" style="width:100%;" />
-      <h2>${c.name}</h2>
-      <p><strong>ID:</strong> ${c.id}</p>
-      <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
-      <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
-      <p><strong>TCGPlayer Price:</strong> ${tcgplayerPriceNorm}</p>
-      <p><strong>Last Updated:</strong> ${tcgplayerLastUpdated}</p>
+  // ------------------------
+  // Open Side Panel
+  // ------------------------
+  function openSidePanel(card) {
+    panelContent.innerHTML = `
+      <h2>${card.name}</h2>
+      <img src="${card.images.large || card.images.small}" alt="${card.name}" style="max-width:100%;">
+      <p><strong>Set:</strong> ${card.set?.name || "Unknown"}</p>
+      <p><strong>Rarity:</strong> ${card.rarity || "N/A"}</p>
+      <p><strong>Artist:</strong> ${card.artist || "Unknown"}</p>
+      <p><strong>HP:</strong> ${card.hp || "N/A"}</p>
+      <p><strong>Types:</strong> ${(card.types || []).join(", ") || "N/A"}</p>
     `;
 
-    detailPanel.classList.remove("hidden");
-    setTimeout(() => detailPanel.classList.add("active"), 10);
+    sidePanel.classList.remove("hidden");
+    sidePanel.classList.add("active");
   }
 });
