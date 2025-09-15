@@ -57,10 +57,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const API_BASE = "https://api.pokemontcg.io/v2";
   const API_KEY = "3c0afac9-db62-4f43-8d3b-d55a0a04b01b";
 
-  // Close side panel
+// Close panel
   closePanel.addEventListener("click", () => {
-    detailPanel.classList.remove("active");
-    setTimeout(() => detailPanel.classList.add("hidden"), 300);
+    sidePanel.classList.remove("active");
   });
 
   searchForm?.addEventListener("submit", async (e) => {
