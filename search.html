@@ -54,7 +54,7 @@
 
 /* Remove position fixed from side panel */
 .side-panel {
-  width: 0; /* start hidden */
+  width: 0; /* hidden initially */
   overflow-y: auto;
   background: #fff;
   border-left: 2px solid #ccc;
@@ -64,12 +64,12 @@
   flex-direction: column;
 }
 
-/* When panel is open */
+/* When open */
 .side-panel.active {
   width: 400px; /* adjust as needed */
 }
 
-/* Sticky header inside panel */
+/* Sticky header */
 .side-panel-header {
   position: sticky;
   top: 0;
@@ -87,6 +87,7 @@
   border: none;
   cursor: pointer;
 }
+
 
 
 
