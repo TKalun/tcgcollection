@@ -119,39 +119,43 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .join("");
 
-      // 🔹 Add click events to open side panel
-      document.querySelectorAll(".card").forEach(cardEl => {
-        cardEl.addEventListener("click", () => {
-          const card = JSON.parse(cardEl.dataset.card.replace(/&apos;/g, "'"));
-          showCardDetail(card);
-        });
-      });
-
-    } catch (err) {
-      resultsDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
-    }
+     // Attach click handlers to cards
+resultsDiv.querySelectorAll(".card").forEach(cardEl => {
+  cardEl.addEventListener("click", () => {
+    const cardId = cardEl.dataset.id; // store id in dataset
+    openSidePanel(cardId);
   });
+});
 
-  // 🔹 Fill side panel with clicked card data
-  function showCardDetail(c) {
-    const imgUrl = c.images?.large || c.images?.small || "images/Ditto404.png";
-    const tcgplayerPriceNorm =
-      c.tcgplayer?.prices?.normal?.market ||
-      c.tcgplayer?.prices?.unlimited?.market ||
-      "None";
-    const tcgplayerLastUpdated = c.tcgplayer?.updatedAt || "None";
+// Function to open side panel with card data
+async function openSidePanel(cardId) {
+  const sidePanel = document.getElementById("sidePanel");
+  const panelContent = document.getElementById("panelContent");
 
-    detailContent.innerHTML = `
-      <img src="${imgUrl}" alt="${c.name}" style="width:100%;" />
-      <h2>${c.name}</h2>
-      <p><strong>ID:</strong> ${c.id}</p>
-      <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
-      <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
-      <p><strong>TCGPlayer Price:</strong> ${tcgplayerPriceNorm}</p>
-      <p><strong>Last Updated:</strong> ${tcgplayerLastUpdated}</p>
+  try {
+    const res = await fetch(`https://api.pokemontcg.io/v2/cards/${cardId}`, {
+      headers: { "X-Api-Key": "3c0afac9-db62-4f43-8d3b-d55a0a04b01b" }
+    });
+    const data = await res.json();
+    const card = data.data;
+
+    panelContent.innerHTML = `
+      <h2>${card.name}</h2>
+      <img src="${card.images.large}" alt="${card.name}" style="max-width:100%;">
+      <p><strong>Set:</strong> ${card.set?.name || "Unknown"}</p>
+      <p><strong>Rarity:</strong> ${card.rarity || "N/A"}</p>
+      <p><strong>Artist:</strong> ${card.artist || "Unknown"}</p>
+      <p><strong>HP:</strong> ${card.hp || "N/A"}</p>
+      <p><strong>Types:</strong> ${(card.types || []).join(", ") || "N/A"}</p>
     `;
 
-    detailPanel.classList.remove("hidden");
-    setTimeout(() => detailPanel.classList.add("active"), 10);
+    sidePanel.classList.add("open");
+  } catch (err) {
+    panelContent.innerHTML = `<p style="color:red;">Error loading card details</p>`;
   }
+}
+
+// Close panel button
+document.getElementById("closePanel").addEventListener("click", () => {
+  document.getElementById("sidePanel").classList.remove("open");
 });
