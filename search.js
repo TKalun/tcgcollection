@@ -128,6 +128,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Open Side Panel
   // ------------------------
   function openSidePanel(card) {
+    const sidePanel = document.getElementById("cardDetail");
+    const panelContent = document.getElementById("cardDetailContent");
     panelContent.innerHTML = `
       <h2>${card.name}</h2>
       <img src="${card.images.large || card.images.small}" alt="${card.name}" style="max-width:100%;">
