@@ -52,33 +52,6 @@
   font-size: 12px;
 }
 
-  </style>
-</head>
-<body>
-  <h1>Search Database & TCGdex</h1>
-
-  <!-- Local DB search -->
-  <form id="searchForm">
-    <input type="text" id="searchQuery" placeholder="Enter local DB search term" required />
-    <button type="submit">Search Local DB</button>
-  </form>
-  <div id="results"></div>
-
-  <!-- TCGdex search by name -->
-<form id="tcgIdForm" style="margin-top: 20px;">
-  <select id="fieldSelect">
-    <option value="name">Name</option>
-    <option value="id">ID</option>
-    <option value="set.name">Set Name</option>
-    <option value="rarity">Rarity</option>
-    <option value="types">Type</option>
-  </select>
-  <input type="text" id="tcgIdQuery" placeholder="Enter search value" required />
-  <button type="submit">Search TCGdex</button>
-</form>
-
-<div id="cardResult"></div>
-
 .side-panel {
   position: fixed;
   top: 0;
@@ -108,6 +81,34 @@
   font-size: 20px;
   cursor: pointer;
 }
+
+  </style>
+</head>
+<body>
+  <h1>Search Database & TCGdex</h1>
+
+  <!-- Local DB search -->
+  <form id="searchForm">
+    <input type="text" id="searchQuery" placeholder="Enter local DB search term" required />
+    <button type="submit">Search Local DB</button>
+  </form>
+  <div id="results"></div>
+
+  <!-- TCGdex search by name -->
+<form id="tcgIdForm" style="margin-top: 20px;">
+  <select id="fieldSelect">
+    <option value="name">Name</option>
+    <option value="id">ID</option>
+    <option value="set.name">Set Name</option>
+    <option value="rarity">Rarity</option>
+    <option value="types">Type</option>
+  </select>
+  <input type="text" id="tcgIdQuery" placeholder="Enter search value" required />
+  <button type="submit">Search TCGdex</button>
+</form>
+
+<div id="cardResult"></div>
+
 
 <!-- Side Panel -->
 <div id="cardDetail" class="side-panel hidden">
