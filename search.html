@@ -52,59 +52,35 @@
   font-size: 12px;
 }
 
-/* Flex container: gallery + panel */
-#mainContainer {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-/* Card gallery */
-.gallery {
-  flex: 1; /* take available space */
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
-  padding: 16px;
-}
-
 .side-panel {
-  width: 0; /* start hidden */
-  overflow-y: auto; /* allow scrolling inside panel */
-  transition: width 0.3s ease;
-  background: #fff;
-  border-left: 2px solid #ccc;
-  box-shadow: -2px 0 5px rgba(0,0,0,0.2);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-}
-
-.side-panel.open {
-  width: 350px; /* visible width */
-}
-
-/* Keep top section fixed */
-.side-panel-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  right: -400px; /* offscreen */
+  width: 400px;
+  height: 100%;
   background: #fff;
-  padding-bottom: 10px;
-  z-index: 10;
-  border-bottom: 1px solid #ccc;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.3);
+  padding: 20px;
+  overflow-y: auto;
+  transition: right 0.3s ease;
+  z-index: 9999;
+}
+.side-panel.active {
+  right: 0;
+}
+.side-panel.hidden {
+  display: none;
 }
 
-/* Close button */
 #closePanel {
-  float: right;
-  font-size: 20px;
-  background: none;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
   border: none;
+  font-size: 20px;
   cursor: pointer;
 }
-
-
 
   </style>
 </head>
@@ -131,21 +107,13 @@
   <button type="submit">Search TCGdex</button>
 </form>
 
-<div id="mainContainer">
-  <!-- Card gallery -->
-  <div id="cardResult" class="gallery"></div>
+<div id="cardResult"></div>
 
-  <!-- Side panel -->
-  <div id="sidePanel" class="side-panel">
-  <div class="side-panel-header">
-    <button id="closePanel">×</button>
-    <h2 id="panelTitle">Card Details</h2>
-  </div>
-  <div id="panelContent">
-    <!-- Card info and image go here -->
-  </div>
-</div>
 
+<!-- Side Panel -->
+<div id="cardDetail" class="side-panel hidden">
+  <button id="closePanel">✖</button>
+  <div id="cardDetailContent"></div>
 </div>
 
 
