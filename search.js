@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const cardQueryInput = document.getElementById("tcgIdQuery");
   const resultsDiv = document.getElementById("cardResult");
 
-  const API_BASE = "https://api.tcgdex.net/v2/en";
+  const API_BASE = "https://api.pokemontcg.io/v2";
   const API_KEY = "3c0afac9-db62-4f43-8d3b-d55a0a04b01b";
 
   searchForm?.addEventListener("submit", async (e) => {
@@ -142,25 +142,24 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`Searching ${field} for "${queryVal}"`);
 
     try {
-      // Step 1: Call the API with filters
-      const res = await fetch(
-        `${API_BASE}/cards?${field}=${encodeURIComponent(queryVal)}`,
-        {
-          headers: {
-            "Authorization": `Bearer ${API_KEY}`
-          }
+      // Step 1: Build Pokémon TCG API query
+      const url = `${API_BASE}/cards?q=${encodeURIComponent(field + ":" + queryVal)}`;
+      const res = await fetch(url, {
+        headers: {
+          "X-Api-Key": API_KEY
         }
-      );
+      });
 
       if (!res.ok) {
         throw new Error(`API Error ${res.status}: ${res.statusText}`);
       }
 
-      let results = await res.json();
+      const json = await res.json();
+      const results = json.data || [];
       console.log("API results:", results);
 
       // Step 2: Handle no results
-      if (!results || results.length === 0) {
+      if (results.length === 0) {
         resultsDiv.innerHTML = `<p>No cards found for "${queryVal}" in ${field}</p>`;
         return;
       }
@@ -196,4 +195,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
