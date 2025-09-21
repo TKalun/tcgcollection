@@ -111,9 +111,9 @@ document.addEventListener("DOMContentLoaded", () => {
           const printreverseHolofoilPrice = (tcgplayerPriceReverseHolofoil != null && tcgplayerPriceReverseHolofoil !== 0)
                ? `<p><strong>Reverse Holofoil:</strong> $${tcgplayerPriceReverseHolofoil}</p>` : ``;
           const print1stEdNormalPrice = (tcgplayerPrice1stEdNormal != null && tcgplayerPrice1stEdNormal !== 0)
-               ? `<p><strong>Normal:</strong> $${tcgplayerPrice1stEdNormal}</p>` : ``;
+               ? `<p><strong>1st Edition normal:</strong> $${tcgplayerPrice1stEdNormal}</p>` : ``;
           const print1stEdHolofoilPrice = (tcgplayerPrice1stEdHolofoil != null && tcgplayerPrice1stEdHolofoil !== 0)
-               ? `<p><strong>Normal:</strong> $${tcgplayerPrice1stEdHolofoil}</p>` : ``;
+               ? `<p><strong>1st Edition Holofoil:</strong> $${tcgplayerPrice1stEdHolofoil}</p>` : ``;
 
           return `
             <div class="card" data-card='${JSON.stringify(c).replace(/'/g, "&apos;")}'>
@@ -125,6 +125,9 @@ document.addEventListener("DOMContentLoaded", () => {
               <p><strong>#:</strong> ${c.number || "N/A"} / ${c.set.total}</p>
               ${printNormalPrice}
               ${printHolofoilPrice}
+              ${printreverseHolofoilPrice}
+              ${print1stEdNormalPrice}
+              ${print1stEdHolofoilPrice}
             </div>
           `;
         })
