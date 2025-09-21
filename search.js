@@ -68,14 +68,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Get values from multiple fields
     const name = document.getElementById("queryName")?.value.trim();
     const set = document.getElementById("querySet")?.value.trim();
-    const rarity = document.getElementById("queryRarity")?.value.trim();
-    const type = document.getElementById("queryType")?.value.trim();
+    const setNumber = document.getElementById("queryNumber")?.value.trim();
     // Build combined query
     let queryParts = [];
     if (name) queryParts.push(`name:${name}`);
     if (set) queryParts.push(`set.name:${set}`);
-    if (rarity) queryParts.push(`rarity:${rarity}`);
-    if (type) queryParts.push(`types:${type}`);
+    if (setNumber) queryParts.push(`queryNumber:${number}`);
+  
 
     if (queryParts.length === 0) {
       resultsDiv.innerHTML = "<p>Please enter at least one search parameter!</p>";
