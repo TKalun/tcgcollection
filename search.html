@@ -126,16 +126,29 @@
   <div id="results"></div>
 
   <!-- TCGdex search by name -->
+<!-- Pokémon TCG API Search -->
 <form id="tcgIdForm" style="margin-top: 20px;">
-  <select id="fieldSelect">
-    <option value="name">Name</option>
-    <option value="id">ID</option>
-    <option value="set.name">Set Name</option>
-    <option value="rarity">Rarity</option>
-    <option value="types">Type</option>
-  </select>
-  <input type="text" id="tcgIdQuery" placeholder="Enter search value" required />
-  <button type="submit">Search TCGdex</button>
+  <div>
+    <label>Name:</label>
+    <input type="text" id="queryName" placeholder="Enter card name" />
+  </div>
+
+  <div>
+    <label>Set Name:</label>
+    <input type="text" id="querySet" placeholder="Enter set name" />
+  </div>
+
+  <div>
+    <label>Rarity:</label>
+    <input type="text" id="queryRarity" placeholder="Enter rarity" />
+  </div>
+
+  <div>
+    <label>Type:</label>
+    <input type="text" id="queryType" placeholder="Enter type" />
+  </div>
+
+  <button type="submit">Search Cards</button>
 </form>
 
 <div id="cardResult"></div>
