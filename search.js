@@ -68,12 +68,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // Get values from multiple fields
     const name = document.getElementById("queryName")?.value.trim();
     const set = document.getElementById("querySet")?.value.trim();
-    const setNumber = document.getElementById("queryNumber")?.value.trim();
+    const number = document.getElementById("queryNumber")?.value.trim();
     // Build combined query
     let queryParts = [];
     if (name) queryParts.push(`name:${name}`);
     if (set) queryParts.push(`set.name:${set}`);
-    if (setNumber) queryParts.push(`queryNumber:${number}`);
+    if (number) queryParts.push(`queryNumber:${number}`);
   
 
     if (queryParts.length === 0) {
