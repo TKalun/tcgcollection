@@ -7,6 +7,7 @@
   <link rel="icon" href="charmegaxeye.ico" type="image/x-icon">
   <style>
 
+
     /* Add a full-page wallpaper behind content */
     body { font-family: Arial, sans-serif; padding: 20px; 
     font-family: Arial, sans-serif;
@@ -136,16 +137,17 @@
         right: 0;
       }
     }
-
+.transparent-title {
+  background: rgba(0, 0, 0, 0.5); /* semi-transparent black */
+  color: white;                   /* text color */
+  padding: 10px 20px;
+  border-radius: 8px;
+  display: inline-block;
+}
   </style>
 </head>
 <body>
-  <h1 style="
-              background: rgba(255, 255, 255, 0.7); /* white with 70% opacity */
-              padding: 15px;
-              border-radius: 10px;
-              box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  "">
+  <h1 class="transparent-title">
   Search Database & Pokemon TCG API</h1>
 
   <!-- Local DB search -->
@@ -157,16 +159,12 @@
 
   <!-- TCGdex search by name -->
 <!-- Pokémon TCG API Search -->
-<form id="tcgIdForm" style="
+<form id="tcgIdForm" class="transparent-title" style="
               margin-top: 20px; 
               display: flex; 
               flex-wrap: wrap; 
               gap: 10px; 
               align-items: center;
-              background: rgba(255, 255, 255, 0.7); /* white with 70% opacity */
-              padding: 15px;
-              border-radius: 10px;
-              box-shadow: 0 4px 8px rgba(0,0,0,0.1);
  ">
   <div style="display: flex; flex-direction: column;">
     <label for="queryName">Name:</label>
