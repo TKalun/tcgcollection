@@ -86,6 +86,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const json = await res.json();
       const results = json.data || [];
+      
+      console.log(`Parsed results (${results.length} cards):`, results);
 
       if (results.length === 0) {
         resultsDiv.innerHTML = `<p>No cards found for "${queryVal}" in ${field}</p>`;
