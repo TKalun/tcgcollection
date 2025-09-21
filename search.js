@@ -65,7 +65,12 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     resultsDiv.innerHTML = "<p>Searching...</p>";
 
-  // Build combined query
+    // Get values from multiple fields
+    const name = document.getElementById("queryName")?.value.trim();
+    const set = document.getElementById("querySet")?.value.trim();
+    const rarity = document.getElementById("queryRarity")?.value.trim();
+    const type = document.getElementById("queryType")?.value.trim();
+    // Build combined query
     let queryParts = [];
     if (name) queryParts.push(`name:${name}`);
     if (set) queryParts.push(`set.name:${set}`);
