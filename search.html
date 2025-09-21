@@ -20,10 +20,11 @@
   body::before {
   content: "";
   position: absolute;     /* stick to viewport */
+  top: 30%;
   left: 0;
   width: 100%;
   min-height: 100%;        /* scales automatically */
-  background: url("cMegaXWallpaper.png") no-repeat center 30%
+  background: url("cMegaXWallpaper.png") no-repeat center top
   #01132A; /* Dark blue background color */
   background-size: 100% auto;  /* full width, proportional height */
   z-index: -1;          /* behind all page content */
@@ -38,6 +39,7 @@
   gap: 16px;
   justify-items: center;
   margin-top: 20px;
+  position: relative;
   z-index: 1;
 }
 
