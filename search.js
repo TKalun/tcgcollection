@@ -74,8 +74,13 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const url = `${API_BASE}/cards?q=${encodeURIComponent(field + ":" + queryVal)}`;
       const res = await fetch(url, {
-        headers: { "X-Api-Key": API_KEY }
-      });
+        method: "GET",
+        mode: "cors", // 🔹 ensure cross-origin requests work
+        headers: {
+           "X-Api-Key": "3c0afac9-db62-4f43-8d3b-d55a0a04b01b",
+            "Accept": "application/json"
+      }
+    });
 
       if (!res.ok) throw new Error(`API Error ${res.status}: ${res.statusText}`);
 
