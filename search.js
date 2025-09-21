@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   searchForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    resultsDiv.innerHTML = "<p>Searching...</p>";
+    resultsDiv.innerHTML = '<p style="color:red;">Searching...</p>';
 
     // Get values from multiple fields
     const name = document.getElementById("queryName")?.value.trim();
