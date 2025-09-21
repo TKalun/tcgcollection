@@ -46,6 +46,7 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
 
 document.addEventListener("DOMContentLoaded", () => {
   const searchForm = document.getElementById("tcgIdForm");
+  const resultsDiv = document.getElementById("cardResult");
 
   const detailPanel = document.getElementById("cardDetail");
   const detailContent = document.getElementById("cardDetailContent");
@@ -63,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
   searchForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
     resultsDiv.innerHTML = "<p>Searching...</p>";
-    
+
   // Build combined query
     let queryParts = [];
     if (name) queryParts.push(`name:${name}`);
