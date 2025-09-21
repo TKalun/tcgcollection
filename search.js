@@ -92,11 +92,14 @@ document.addEventListener("DOMContentLoaded", () => {
         .map(c => {
           const imgUrl = c.images?.large || c.images?.small || "images/Ditto404.png";
           const tcgplayerPriceNorm = c.tcgplayer?.prices?.normal?.market;
+          const tcgplayerPriceHolofoil = c.tcgplayer?.prices?.holofoil?.market;
 
           const tcgplayerLastUpdated = c.tcgplayer?.updatedAt || "None";
 
           const printNormalPrice = (tcgplayerPriceNorm != null && tcgplayerPriceNorm !== 0)
-               ? `<p><strong>Normal:</strong> $${tcgplayerPriceNorm}</p>` : `<p><strong>Normal:</strong> None</p>`;
+               ? `<p><strong>Normal:</strong> $${tcgplayerPriceNorm}</p>` : ``;
+          const printHolofoilPrice = (tcgplayerPriceHolofoil != null && tcgplayerPriceHolofoil !== 0)
+               ? `<p><strong>Holofoil:</strong> $${tcgplayerPriceHolofoil}</p>` : ``;
 
           return `
             <div class="card" data-card='${JSON.stringify(c).replace(/'/g, "&apos;")}'>
@@ -107,6 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
               <p><strong>#:</strong> ${c.number || "N/A"} / ${c.set.total}</p>
               ${printNormalPrice}
+              ${tcgplayerPriceHolofoil}
             </div>
           `;
         })
