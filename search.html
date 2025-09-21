@@ -13,17 +13,17 @@
     padding: 20px;
     position: relative;
     z-index: 0; /* content above background */
+    min-height: 100vh; /* ensure body covers viewport at minimum */
     }
 
   body::before {
   content: "";
-  position: absolute;
+  position: fixed;     /* stick to viewport */
   top: 30%;            /* start 30% from top */
   left: 0;
   width: 100%;
-  height: auto;        /* scales automatically */
-  min-height: 100%;    /* ensures it covers the viewport */
-  background: url("cMegaXWallpaper.png") no-repeat center 30%
+  height: 100%;        /* scales automatically */
+  background: url("cMegaXWallpaper.png") no-repeat center top
   #01132A; /* Dark blue background color */
   background-size: 100% auto;  /* full width, proportional height */
   z-index: -1;          /* behind all page content */
