@@ -144,6 +144,13 @@
   border-radius: 8px;
   display: inline-block;
 }
+.transparent-box {
+  position: fixed;       /* pin to viewport */
+  top: 20px;             /* distance from top of viewport */
+  left: 50%;             /* center horizontally */
+  transform: translateX(-50%); /* perfect centering */
+  z-index: 1000; 
+}
   </style>
 </head>
 <body>
@@ -151,7 +158,7 @@
   Search Database & Pokemon TCG API</h1>
 
   <!-- Local DB search -->
-  <form id="searchForm">
+  <form id="searchForm" class="transparent-box">
     <input type="text" id="searchQuery" placeholder="Enter local DB search term" required />
     <button type="submit">Search Local DB</button>
   </form>
