@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let queryParts = [];
     if (name) queryParts.push(`name:${name}`);
     if (set) queryParts.push(`set.name:${set}`);
-    if (number) queryParts.push(`queryNumber:${number}`);
+    if (number) queryParts.push(`number:${number}`);
   
 
     if (queryParts.length === 0) {
