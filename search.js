@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const tcgplayerPriceNorm = c.tcgplayer?.prices?.normal?.market;
           const tcgplayerPriceHolofoil = c.tcgplayer?.prices?.holofoil?.market;
           const tcgplayerPriceReverseHolofoil = c.tcgplayer?.prices?.reverseHolofoil?.market;
-          const tcgplayerPrice1stEdNormal = c.tcgplayer?.prices?.["1stEditionNormal"]?.market;
+          const tcgplayerPrice1stEdNormal = c.tcgplayer?.prices?.['1stEditionNormal']?.market;
           const tcgplayerPrice1stEdHolofoil = c.tcgplayer?.prices?.["1stEditionHolofoil"]?.market;
           const tcgplayerPriceunLimited = c.tcgplayer?.prices?.unlimited?.market;
 
@@ -112,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const printreverseHolofoilPrice = (tcgplayerPriceReverseHolofoil != null && tcgplayerPriceReverseHolofoil !== 0)
                ? `<p><strong>Reverse Holofoil:</strong> $${tcgplayerPriceReverseHolofoil}</p>` : ``;
           const printUnlimitedPrice = (tcgplayerPriceunLimited != null && tcgplayerPriceunLimited !== 0)
-               ? `<p><strong>1st Edition Holofoil:</strong> $${tcgplayerPriceunLimited}</p>` : ``;
+               ? `<p><strong>Unlimited:</strong> $${tcgplayerPriceunLimited}</p>` : ``;
           const print1stEdNormalPrice = (tcgplayerPrice1stEdNormal != null && tcgplayerPrice1stEdNormal !== 0)
                ? `<p><strong>1st Edition normal:</strong> $${tcgplayerPrice1stEdNormal}</p>` : ``;
           const print1stEdHolofoilPrice = (tcgplayerPrice1stEdHolofoil != null && tcgplayerPrice1stEdHolofoil !== 0)
