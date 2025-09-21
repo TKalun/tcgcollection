@@ -6,14 +6,28 @@
   <title>Search</title>
   <link rel="icon" href="charmegaxeye.ico" type="image/x-icon">
   <style>
+    /* Add a full-page wallpaper behind content */
     body { font-family: Arial, sans-serif; padding: 20px; 
-     background: url("cMegaXWallpaper.png") no-repeat center 30%/* Path to your image */
-     #01132A; /* Dark blue background color */
-     background-size: 100%; /* scale wallpaper to cover */
-     background-attachment: fixed; /* moves with page, top anchored at 30% */
-    
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    position: relative;
+    z-index: 0; /* content above background */
     }
 
+  body::before {
+  content: "";
+  position: absolute;
+  top: 30%;            /* start 30% from top */
+  left: 0;
+  width: 100%;
+  height: auto;        /* scales automatically */
+  min-height: 100%;    /* ensures it covers the viewport */
+  background: url("cMegaXWallpaper.png") no-repeat center 30%
+  #01132A; /* Dark blue background color */
+  background-size: 100% auto;  /* full width, proportional height */
+  z-index: -1;          /* behind all page content */
+  }
     input { padding: 8px; width: 250px; margin-right: 8px; }
     button { padding: 8px 12px; margin-top: 5px; }
 
