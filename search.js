@@ -93,6 +93,9 @@ document.addEventListener("DOMContentLoaded", () => {
           const imgUrl = c.images?.large || c.images?.small || "images/Ditto404.png";
           const tcgplayerPriceNorm = c.tcgplayer?.prices?.normal?.market;
           const tcgplayerPriceHolofoil = c.tcgplayer?.prices?.holofoil?.market;
+          const tcgplayerPriceReverseHolofoil = c.tcgplayer?.prices?.reverseHolofoil?.market;
+          const tcgplayerPrice1stEdNormal = c.tcgplayer?.prices?.1stEditionNormal?.market;
+          const tcgplayerPrice1stEdHolofoil = c.tcgplayer?.prices?.1stEditionHolofoil?.market;
 
           const tcgplayerLastUpdated = c.tcgplayer?.updatedAt || "None";
 
@@ -100,6 +103,12 @@ document.addEventListener("DOMContentLoaded", () => {
                ? `<p><strong>Normal:</strong> $${tcgplayerPriceNorm}</p>` : ``;
           const printHolofoilPrice = (tcgplayerPriceHolofoil != null && tcgplayerPriceHolofoil !== 0)
                ? `<p><strong>Holofoil:</strong> $${tcgplayerPriceHolofoil}</p>` : ``;
+          const printreverseHolofoilPrice = (tcgplayerPriceReverseHolofoil != null && tcgplayerPriceReverseHolofoil !== 0)
+               ? `<p><strong>Reverse Holofoil:</strong> $${tcgplayerPriceReverseHolofoil}</p>` : ``;
+          const print1stEdNormalPrice = (tcgplayerPrice1stEdNormal != null && tcgplayerPrice1stEdNormal !== 0)
+               ? `<p><strong>Normal:</strong> $${tcgplayerPrice1stEdNormal}</p>` : ``;
+          const print1stEdHolofoilPrice = (tcgplayerPrice1stEdHolofoil != null && tcgplayerPrice1stEdHolofoil !== 0)
+               ? `<p><strong>Normal:</strong> $${tcgplayerPrice1stEdHolofoil}</p>` : ``;
 
           return `
             <div class="card" data-card='${JSON.stringify(c).replace(/'/g, "&apos;")}'>
