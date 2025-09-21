@@ -178,11 +178,31 @@ document.addEventListener("DOMContentLoaded", () => {
   // 🔹 Fill side panel with clicked card data
   function showCardDetail(c) {
     const imgUrl = c.images?.large || c.images?.small || "images/Ditto404.png";
-    const tcgplayerPriceNorm =
-      c.tcgplayer?.prices?.normal?.market ||
-      c.tcgplayer?.prices?.unlimited?.market ||
-      "None";
+          const tcgplayerPriceNorm = c.tcgplayer?.prices?.normal?.market;
+          const tcgplayerPriceHolofoil = c.tcgplayer?.prices?.holofoil?.market;
+          const tcgplayerPriceReverseHolofoil = c.tcgplayer?.prices?.reverseHolofoil?.market;
+          const tcgplayerPriceUnlimited = c.tcgplayer?.prices?.unlimited?.market;
+          const tcgplayerPriceUnlimitedHolofoil = c.tcgplayer?.prices?.unlimitedHolofoil?.market;
+          const tcgplayerPrice1stEdition = c.tcgplayer?.prices?.["1stEdition"]?.market;
+          const tcgplayerPrice1stEdNormal = c.tcgplayer?.prices?.['1stEditionNormal']?.market;
+          const tcgplayerPrice1stEdHolofoil = c.tcgplayer?.prices?.["1stEditionHolofoil"]?.market;
     const tcgplayerLastUpdated = c.tcgplayer?.updatedAt || "None";
+              const printNormalPrice = (tcgplayerPriceNorm != null && tcgplayerPriceNorm !== 0)
+               ? `<p><strong>Normal:</strong> $${tcgplayerPriceNorm}</p>` : ``;
+          const printHolofoilPrice = (tcgplayerPriceHolofoil != null && tcgplayerPriceHolofoil !== 0)
+               ? `<p><strong>Holofoil:</strong> $${tcgplayerPriceHolofoil}</p>` : ``;
+          const printreverseHolofoilPrice = (tcgplayerPriceReverseHolofoil != null && tcgplayerPriceReverseHolofoil !== 0)
+               ? `<p><strong>Reverse Holofoil:</strong> $${tcgplayerPriceReverseHolofoil}</p>` : ``;
+          const printUnlimitedPrice = (tcgplayerPriceUnlimited != null && tcgplayerPriceUnlimited !== 0)
+               ? `<p><strong>Unlimited:</strong> $${tcgplayerPriceUnlimited}</p>` : ``;
+          const printUnlimitedHolofoilPrice = (tcgplayerPriceUnlimitedHolofoil != null && tcgplayerPriceUnlimitedHolofoil !== 0)
+               ? `<p><strong>Unlimited Holofoil:</strong> $${tcgplayerPriceUnlimitedHolofoil}</p>` : ``;
+          const print1stEdNormalPrice = (tcgplayerPrice1stEdNormal != null && tcgplayerPrice1stEdNormal !== 0)
+               ? `<p><strong>1st Edition normal:</strong> $${tcgplayerPrice1stEdNormal}</p>` : ``;
+          const print1stEdHolofoilPrice = (tcgplayerPrice1stEdHolofoil != null && tcgplayerPrice1stEdHolofoil !== 0)
+               ? `<p><strong>1st Edition Holofoil:</strong> $${tcgplayerPrice1stEdHolofoil}</p>` : ``;
+          const print1stEditionPrice = (tcgplayerPrice1stEdition != null && tcgplayerPrice1stEdition !== 0)
+               ? `<p><strong>1st Edition:</strong> $${tcgplayerPrice1stEdition}</p>` : ``;
 
     detailContent.innerHTML = `
       <img src="${imgUrl}" alt="${c.name}" style="width:100%;" />
@@ -190,7 +210,14 @@ document.addEventListener("DOMContentLoaded", () => {
       <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
       <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
       <p><strong>#:</strong> ${c.number} / ${c.set.total}</p>
-      <p><strong>TCGPlayer Price:</strong> ${tcgplayerPriceNorm}</p>
+              ${printNormalPrice}
+              ${printHolofoilPrice}
+              ${printreverseHolofoilPrice}
+              ${printUnlimitedPrice}
+              ${printUnlimitedHolofoilPrice}
+              ${print1stEditionPrice}
+              ${print1stEdNormalPrice}
+              ${print1stEdHolofoilPrice}
       <p><strong>Last Updated:</strong> ${tcgplayerLastUpdated}</p>
     `;
 
