@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
               <p><strong>#:</strong> ${c.number || "N/A"} / ${c.set.total}</p>
               ${printNormalPrice}
-              ${tcgplayerPriceHolofoil}
+              ${printHolofoilPrice}
             </div>
           `;
         })
