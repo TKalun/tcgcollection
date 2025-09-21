@@ -94,8 +94,8 @@ document.addEventListener("DOMContentLoaded", () => {
           const tcgplayerPriceNorm = c.tcgplayer?.prices?.normal?.market;
           const tcgplayerPriceHolofoil = c.tcgplayer?.prices?.holofoil?.market;
           const tcgplayerPriceReverseHolofoil = c.tcgplayer?.prices?.reverseHolofoil?.market;
-          const tcgplayerPrice1stEdNormal = c.tcgplayer?.prices?.1stEditionNormal?.market;
-          const tcgplayerPrice1stEdHolofoil = c.tcgplayer?.prices?.1stEditionHolofoil?.market;
+          const tcgplayerPrice1stEdNormal = c.tcgplayer?.prices?.["1stEditionNormal"]?.market;
+          const tcgplayerPrice1stEdHolofoil = c.tcgplayer?.prices?.["1stEditionHolofoil"]?.market;
 
           const tcgplayerLastUpdated = c.tcgplayer?.updatedAt || "None";
 
