@@ -46,9 +46,10 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
 
 document.addEventListener("DOMContentLoaded", () => {
   const searchForm = document.getElementById("tcgIdForm");
-  const fieldSelect = document.getElementById("fieldSelect");
-  const cardQueryInput = document.getElementById("tcgIdQuery");
-  const resultsDiv = document.getElementById("cardResult");
+    const name = document.getElementById("queryName").value.trim();
+    const set = document.getElementById("querySet").value.trim();
+    const rarity = document.getElementById("queryRarity").value.trim();
+    const type = document.getElementById("queryType").value.trim();
 
   const detailPanel = document.getElementById("cardDetail");
   const detailContent = document.getElementById("cardDetailContent");
@@ -65,14 +66,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   searchForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (!cardQueryInput || !resultsDiv) return;
+    
 
-    const queryVal = cardQueryInput.value.trim();
-    const field = fieldSelect?.value || "name";
+    
+    // Build query string
+    let queryParts = [];
+    if (name) queryParts.push(`name:${name}`);
+    if (set) queryParts.push(`set.name:${set}`);
+    if (rarity) queryParts.push(`rarity:${rarity}`);
+    if (type) queryParts.push(`types:${type}`);
+    const query = queryParts.join(" ");
+
+    if (!query) {
+      alert("Please enter at least one search parameter!");
+      return;
+    }
     resultsDiv.innerHTML = "<p>Searching...</p>";
 
     try {
-      const url = `${API_BASE}/cards?q=${encodeURIComponent(field + ":" + queryVal)}`;
+      const url = `${API_BASE}/cards?q=${encodeURIComponent(query)}`
       const res = await fetch(url, {
         method: "GET",
         mode: "cors", // 🔹 ensure cross-origin requests work
