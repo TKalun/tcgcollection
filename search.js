@@ -91,11 +91,12 @@ document.addEventListener("DOMContentLoaded", () => {
       resultsDiv.innerHTML = results
         .map(c => {
           const imgUrl = c.images?.large || c.images?.small || "images/Ditto404.png";
-          const tcgplayerPriceNorm =
-            c.tcgplayer?.prices?.normal?.market ||
-            c.tcgplayer?.prices?.unlimited?.market ||
-            "None";
+          const tcgplayerPriceNorm = c.tcgplayer?.prices?.normal?.market;
+
           const tcgplayerLastUpdated = c.tcgplayer?.updatedAt || "None";
+
+          const printNormalPrice = (tcgplayerPriceNorm != null && tcgplayerPriceNorm !== 0)
+               ? `<p><strong>Normal:</strong> $${tcgplayerPriceNorm}</p>` : `<p><strong>Normal:</strong> None</p>`;
 
           return `
             <div class="card" data-card='${JSON.stringify(c).replace(/'/g, "&apos;")}'>
@@ -105,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
               <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
               <p><strong>#:</strong> ${c.number || "N/A"} / ${c.set.total}</p>
-              <p><strong>TCGPlayer Price - Normal:</strong> ${tcgplayerPriceNorm}</p>
+              ${printNormalPrice}
             </div>
           `;
         })
