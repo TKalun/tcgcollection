@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <h3>${c.name || "Unknown Name"}</h3>
               <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
               <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
-              <p><strong>#:</strong> ${c.number || "N/A"}/${c.set.total}</p>
+              <p><strong>#:</strong> ${c.number || "N/A"} / ${c.set.total}</p>
               <p><strong>TCGPlayer Price - Normal:</strong> ${tcgplayerPriceNorm}</p>
             </div>
           `;
@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <h2>${c.name}</h2>
       <p><strong>Set:</strong> ${c.set?.name || "Unknown"}</p>
       <p><strong>Rarity:</strong> ${c.rarity || "N/A"}</p>
-      <p><strong>#:</strong> ${c.number}/${c.set.total}</p>
+      <p><strong>#:</strong> ${c.number} / ${c.set.total}</p>
       <p><strong>TCGPlayer Price:</strong> ${tcgplayerPriceNorm}</p>
       <p><strong>Last Updated:</strong> ${tcgplayerLastUpdated}</p>
     `;

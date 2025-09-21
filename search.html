@@ -19,6 +19,27 @@
   margin-top: 20px;
 }
 
+/* Mobile adjustments */
+@media (max-width: 600px) {
+  #results, #cardResult {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+/* Mobile: make it slide over */
+@media (max-width: 768px) {
+  .side-panel {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 100%;
+    height: 100%;
+    transition: right 0.3s ease;
+  }
+  .side-panel.active {
+    right: 0;
+  }
+}
 .card {
   background-color: #fff;
   border: 1px solid #ccc;
@@ -26,9 +47,16 @@
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   transition: transform 0.3s, box-shadow 0.3s;
-  width: 180px;
+  width: 140px;
   cursor: pointer;
   text-align: left;
+}
+
+.card img {
+  width: 100%;
+  height: auto;
+  max-height: 250px;
+  object-fit: cover;
 }
 
 .card:hover {
@@ -38,7 +66,7 @@
 
 .card img {
   width: 100%;
-  height: 250px;
+  height: 200px;
   object-fit: cover;
 }
 
@@ -56,13 +84,13 @@
   position: fixed;
   top: 0;
   right: -400px; /* offscreen */
-  width: 400px;
+  width: 0px;
   height: 100%;
   background: #fff;
   box-shadow: -2px 0 10px rgba(0,0,0,0.3);
   padding: 20px;
   overflow-y: auto;
-  transition: right 0.3s ease;
+  transition: width 0.3s ease;
   z-index: 9999;
 }
 .side-panel.active {
